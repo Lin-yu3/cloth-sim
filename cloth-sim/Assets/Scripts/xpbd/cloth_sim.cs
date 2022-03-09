@@ -6,10 +6,8 @@ public class cloth_sim : MonoBehaviour
 {
     int horizontal_resolution=50;//水平
     int vertical_resolution=50;//垂直
-    int substep=5;
-    List<GameObject> sphere=new List<GameObject>();
+    GameObject[] sphere=new GameObject[2626];
     Particle[] ball=new Particle[2626];
-    
     List<Vector3> vertices;
     Vector3[] myVertices=new Vector3[2626];
     List<int> triangles;
@@ -23,91 +21,91 @@ public class cloth_sim : MonoBehaviour
     
     void Start()
     {
+        vertices = new List<Vector3>();
+        triangles=new List<int>();
+        for(int i=0;i<ball.Length;i++)
+        {
+            sphere[i] = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            sphere[i].transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+            sphere[i].transform.SetParent(transform);
+        }
         genVertices();
         genTriangles();
-        DrawMeshSetConstraints();
+        DrawSphereSetConstraints();
     }
-    void Update()
+    /*void Update()
     {
-        for(int j=0;j<substep;j++)
+        float m_delta_physics_time = 1/300f; // 公式:delta_frame_time/substep, substep=5
+        //重力模擬       
+        for (int i = 0; i < ball.Length; i++)
         {
-            float m_delta_physics_time = 1/300f; // 公式:delta_frame_time/substep, substep=5
-            //float m_delta_physics_time = Time.deltaTime/substep;
-            //重力模擬       
-            for (int i = 0; i < myVertices.Length; i++)
-            {
-                ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
-                ball[i].p = ball[i].x + m_delta_physics_time * ball[i].v;
-            }
-            //更新Mesh
-            //mesh.vertices=myVertices;
-            // Reset Lagrange multipliers (only necessary for XPBD)
+            ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
+            ball[i].p = ball[i].x + m_delta_physics_time * ball[i].v;
+        }
+        //更新Mesh
+        //mesh.vertices=myVertices;
+        // Reset Lagrange multipliers (only necessary for XPBD)
+        foreach(DistanceConstraint constraint in distconstraints){
+            constraint.m_lagrange_multiplier=0;
+        }
+        foreach(FixedPointConstraint constraint in fixconstraints){
+            constraint.m_lagrange_multiplier=0;
+        }
+        //generateCollisionConstraints();
+        // Project Particles
+        int solverIterators=10;
+        for (int i = 0; i < solverIterators; i++){    
             foreach(DistanceConstraint constraint in distconstraints){
-                constraint.m_lagrange_multiplier=0;
+                constraint.projectParticles();
             }
             foreach(FixedPointConstraint constraint in fixconstraints){
-                constraint.m_lagrange_multiplier=0;
+                constraint.projectParticles();
             }
-            //generateCollisionConstraints();
-            // Project Particles
-            int solverIterators=10;
-            for (int i = 0; i < solverIterators; i++){    
-                foreach(DistanceConstraint constraint in distconstraints){
-                    constraint.projectParticles();
-                }
-                foreach(FixedPointConstraint constraint in fixconstraints){
-                    constraint.projectParticles();
-                }
-            }
-            //更新 GameObject localPosition & Particles
-            for(int i=0;i<myVertices.Length;i++)
-            {
-                //更新 GameObject's localPosition
-                myVertices[i]= ball[i].p;
-                //更新 particle
-                ball[i].v = (ball[i].p-ball[i].x) * (1.0f/m_delta_physics_time);
-                ball[i].x = ball[i].p;
-                //Update velocities
-                ball[i].v*=0.9999f;
-            }
-            //Clear EnvironmentalCollisionConstraints
-            //collconstraints.Clear();
         }
-    }
-    void DrawMeshSetConstraints()
+        //更新 GameObject localPosition & Particles
+        for(int i=0;i<ball.Length;i++)
+        {
+            //更新 GameObject's localPosition
+            sphere[i].transform.localPosition= ball[i].p;
+            //更新 particle
+            ball[i].v = (ball[i].p-ball[i].x) * (1.0f/m_delta_physics_time);
+            ball[i].x = ball[i].p;
+            //Update velocities
+            ball[i].v*=0.9999f;
+        }
+        //Clear EnvironmentalCollisionConstraints
+        //collconstraints.Clear();
+    }*/
+    void DrawSphereSetConstraints()
     {
         //設置頂點
-        for(int i=0;i<vertices.Count;i++){ vertices[i]+=new Vector3(0,2,1);}
+        //for(int i=0;i<vertices.Count;i++){ vertices[i]+=new Vector3(0,2,1);}
         Vector3[] myVertices=vertices.ToArray();
-        print("myVertices.Length: "+ myVertices.Length);
-        //設置三角形頂點順序，順時針設置
-        int[] myTriangles=triangles.ToArray();
-        //for(int i=0;i<triangles.Count;i++){print("triangle["+i+"]: "+triangles[i]);}
-        print("myTriangles.Length: "+ myTriangles.Length);
-        //設置uv
-        Vector2[] myUV=uvs.ToArray();
-        print("myUV.Length: "+ myUV.Length);
-
-        for(int i=0;i<myVertices.Length;i++)
+        for(int i=0;i<ball.Length;i++)
         {
             ball[i] = new Particle(myVertices[i]);
-            myVertices[i] = ball[i].x;
-            ball[i].v=new Vector3(Random.Range(-0.001f,+0.001f),Random.Range(-0.001f,+0.001f),Random.Range(-0.001f,+0.001f));
+            print("myVertices["+i+"]: "+ myVertices[i]);
+            sphere[i].transform.localPosition = ball[i].x;     
         }
+        
+        //設置三角形頂點順序，順時針設置
+        int[] myTriangles=triangles.ToArray();
+        print("myTriangles.Length: "+ myTriangles.Length);
+
         //釘住右上角,左上角
         float range_radius = 0.1f;
-        for (int i=0;i<myVertices.Length;i++)
+        for (int i=0;i<ball.Length;i++)
         {
             if ((ball[i].x - new Vector3(1,2,0)).magnitude < range_radius)
             {
                 fixconstraints.Add( new FixedPointConstraint(ball[i],ball[i].x));
-                ball[i].m = 1/(myVertices.Length);//質量很大,就不會被DistanceConstraint影響
+                ball[i].m = 99999;//質量很大,就不會被DistanceConstraint影響
                 ball[i].w = 1/ball[i].m;
             }
             if ((ball[i].x - new Vector3(-1,2,0)).magnitude < range_radius)
             {
                 fixconstraints.Add( new FixedPointConstraint(ball[i],ball[i].x));
-                ball[i].m = 1/(myVertices.Length);//質量很大,就不會被DistanceConstraint影響
+                ball[i].m = 99999;//質量很大,就不會被DistanceConstraint影響
                 ball[i].w = 1/ball[i].m;
             }
         }
@@ -132,22 +130,15 @@ public class cloth_sim : MonoBehaviour
                 float u = (h_index - 0.5f) / horizontal_resolution; 
                 if (v_index % 2 == 0 || h_index == 0) u = h_index / horizontal_resolution;
                 float v = (v_index) / (vertical_resolution);
-                float x = (u- 0.5f) * 2;
+                float x = (u - 0.5f) * 2;
                 float y = (v - 0.5f) * 2;
-
-                sphere[v_index,h_index] = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                sphere[v_index,h_index].transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
-                sphere[v_index,h_index].transform.SetParent(transform);
-                ball[v_index,h_index] = new Particle( new Vector3( (x, 0, y ) );
-                sphere[v_index,h_index].transform.localPosition = ball[i,j].x;
-                
                 vertices.Add(new Vector3(x, 0, y));
-                uvs.Add(new Vector2(u, v));
+                //uvs.Add(new Vector2(u, v));
                 // Additional vetex at the even-indexed row
                 if (v_index % 2 == 1 && h_index == horizontal_resolution)
                 {
                     vertices.Add(new Vector3(0.5f * 2, 0, y));
-                    uvs.Add(new Vector2(1, v));
+                    //uvs.Add(new Vector2(1, v));
                 }
             }
         }
