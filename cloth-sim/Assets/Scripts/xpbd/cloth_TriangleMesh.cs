@@ -56,12 +56,13 @@ public class cloth_TriangleMesh : MonoBehaviour
         {
             for (int h_index = 0; h_index <= horizontal_resolution; ++h_index)
             {
-                float u = (h_index - 0.5f) / horizontal_resolution; 
-                if (v_index % 2 == 0 || h_index == 0) u = h_index / horizontal_resolution;
-                float v = (v_index) / (vertical_resolution);
-                float x = (u- 0.5f) * 2;
+                float u = (h_index - 0.5f) / (float)horizontal_resolution; 
+                if (v_index % 2 == 0 || h_index == 0) u = h_index / (float) horizontal_resolution;
+                float v = v_index / (float)vertical_resolution;
+                //print("v: "+v);
+                float x = (u - 0.5f) * 2;
                 float y = (v - 0.5f) * 2;
-
+                print("y: "+y);
                 vertices.Add(new Vector3(x, 0, y));
                 uvs.Add(new Vector2(u, v));
                 // Additional vetex at the even-indexed row

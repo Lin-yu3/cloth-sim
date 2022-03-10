@@ -25,7 +25,7 @@ public class cloth_sim : MonoBehaviour
         for(int i=0;i<myball.Length;i++)
         {
             Instantiate(myCube, myball[i].x, new Quaternion(0,90,0,0));
-            print("myball["+i+"].x: "+myball[i].x);
+            //print("myball["+i+"].x: "+myball[i].x);
         }
     }
     void genVertices()
@@ -35,18 +35,16 @@ public class cloth_sim : MonoBehaviour
         {
             for (int h_index = 0; h_index <= horizontal_resolution; ++h_index)
             {
-                float u = (h_index - 0.5f) / horizontal_resolution; 
-                if (v_index % 2 == 0 || h_index == 0) u = h_index / horizontal_resolution;
-                float v = (v_index) / (vertical_resolution);
+                float u = (h_index - 0.5f) / (float)horizontal_resolution; 
+                if (v_index % 2 == 0 || h_index == 0) u = h_index / (float) horizontal_resolution;
+                float v = v_index / (float)(vertical_resolution);
                 float x = (u - 0.5f) * 2;
                 float y = (v - 0.5f) * 2;
-                //vertices.Add(new Vector3(x, 0, y));
                 ball.Add(new Particle( new Vector3(x, 0, y)));
                 //uvs.Add(new Vector2(u, v));
                 // Additional vetex at the even-indexed row
                 if (v_index % 2 == 1 && h_index == horizontal_resolution)
                 {
-                    //vertices.Add(new Vector3(0.5f * 2, 0, y));
                     ball.Add(new Particle(new Vector3(0.5f * 2, 0, y)));
                     //uvs.Add(new Vector2(1, v));
                 }  
