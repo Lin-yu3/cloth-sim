@@ -2,31 +2,52 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class cloth_sim : MonoBehaviour
+public class cloth_TriangleMesh : MonoBehaviour
 {
     int horizontal_resolution=50;//水平
     int vertical_resolution=50;//垂直
-    GameObject[] sphere=new GameObject[2626];
-    List<Particle> ball=new List<Particle>();
-    Particle[] myball=new Particle[2626];
-    List<int> triangles=new List<int>();
+    List<Vector3> vertices;
+    Vector3[] myVertices=new Vector3[2626];
+    List<int> triangles;
     int[] myTriangles=new int[15150];
     int[,] m_triangle_list=new int[5050,3];
     List<Vector2> uvs;
     Vector2[] myUV;
-    List<DistanceConstraint> distconstraints = new List<DistanceConstraint>();
-    List<FixedPointConstraint> fixconstraints = new List<FixedPointConstraint>();
-    List<EnvironmentalCollisionConstraint> collconstraints = new List<EnvironmentalCollisionConstraint>();
-    public GameObject myCube;
+    float[,] m_uv_list=new float[5050,6]; // 6=TriangleMesh三頂點的uv
+    public Material material;
+    Mesh mesh;
     void Start()
     {
+        vertices = new List<Vector3>();
+        triangles=new List<int>();
+        uvs = new List<Vector2>();
         genVertices();
-        Particle[] myball=ball.ToArray();
-        for(int i=0;i<myball.Length;i++)
-        {
-            Instantiate(myCube, myball[i].x, new Quaternion(0,90,0,0));
-            print("myball["+i+"].x: "+myball[i].x);
-        }
+        genTriangles();
+        DrawMesh();
+    }
+    void Update()
+    {
+    }
+    void DrawMesh()
+    {
+        gameObject.AddComponent<MeshFilter>();
+        gameObject.AddComponent<MeshRenderer>();
+        gameObject.GetComponent<MeshRenderer>().material = material;
+        mesh = GetComponent<MeshFilter>().mesh;
+        mesh.Clear();
+        //設置頂點
+        Vector3[] myVertices=vertices.ToArray();
+        mesh.vertices=myVertices;
+        print("myVertices.Length: "+ myVertices.Length);
+        //設置三角形頂點順序，順時針設置
+        int[] myTriangles=triangles.ToArray();
+        mesh.triangles=myTriangles;
+        //for(int i=0;i<triangles.Count;i++){print("triangle["+i+"]: "+triangles[i]);}
+        print("myTriangles.Length: "+ myTriangles.Length);
+        //設置uv
+        Vector2[] myUV=uvs.ToArray();
+        mesh.uv=myUV;
+        print("myUV.Length: "+ myUV.Length);
     }
     void genVertices()
     {
@@ -38,18 +59,17 @@ public class cloth_sim : MonoBehaviour
                 float u = (h_index - 0.5f) / horizontal_resolution; 
                 if (v_index % 2 == 0 || h_index == 0) u = h_index / horizontal_resolution;
                 float v = (v_index) / (vertical_resolution);
-                float x = (u - 0.5f) * 2;
+                float x = (u- 0.5f) * 2;
                 float y = (v - 0.5f) * 2;
-                //vertices.Add(new Vector3(x, 0, y));
-                ball.Add(new Particle( new Vector3(x, 0, y)));
-                //uvs.Add(new Vector2(u, v));
+
+                vertices.Add(new Vector3(x, 0, y));
+                uvs.Add(new Vector2(u, v));
                 // Additional vetex at the even-indexed row
                 if (v_index % 2 == 1 && h_index == horizontal_resolution)
                 {
-                    //vertices.Add(new Vector3(0.5f * 2, 0, y));
-                    ball.Add(new Particle(new Vector3(0.5f * 2, 0, y)));
-                    //uvs.Add(new Vector2(1, v));
-                }  
+                    vertices.Add(new Vector3(0.5f * 2, 0, y));
+                    uvs.Add(new Vector2(1, v));
+                }
             }
         }
     }
@@ -108,6 +128,7 @@ public class cloth_sim : MonoBehaviour
                     }
                 }
             }
-        }    
+        }
     }
 }
+
