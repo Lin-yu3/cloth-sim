@@ -21,13 +21,88 @@ public class cloth_sim : MonoBehaviour
     void Start()
     {
         genVertices();
+        genTriangles();
         Particle[] myball=ball.ToArray();
+        int[] myTriangles=triangles.ToArray();
         for(int i=0;i<myball.Length;i++)
         {
-            Instantiate(myCube, myball[i].x, new Quaternion(0,90,0,0));
-            //print("myball["+i+"].x: "+myball[i].x);
+            myball[i].x+=new Vector3(0,2,1);
+            sphere[i]=Instantiate(myCube, myball[i].x, new Quaternion(0,90,0,0));
+            //釘住右上角,左上角
+            float range_radius = 0.1f;
+            if ((myball[i].x - new Vector3(1,2,0)).magnitude < range_radius)
+            {
+                fixconstraints.Add( new FixedPointConstraint(myball[i],myball[i].x));
+                myball[i].m = 1;//質量很大,就不會被DistanceConstraint影響
+                myball[i].w = 1/myball[i].m;
+            }
+            else if ((myball[i].x - new Vector3(-1,2,0)).magnitude < range_radius)
+            {
+                fixconstraints.Add( new FixedPointConstraint(myball[i],myball[i].x));
+                myball[i].m = 1;//質量很大,就不會被DistanceConstraint影響
+                myball[i].w = 1/myball[i].m;
+            }
+            else
+            {
+                myball[i].f = new Vector3(0, -9.8f, 0);//注意!!!重力值亂設!!!
+                myball[i].m = 1;//質量很大,就不會被DistanceConstraint影響
+                myball[i].w = 1/myball[i].m;    
+            }   
         }
+        for ( int i = 0; i < myTriangles.Length / 3; ++i)
+        {
+            Particle p_0 = myball[myTriangles[i * 3 + 0]];
+            Particle p_1 = myball[myTriangles[i * 3 + 1]];
+            Particle p_2 = myball[myTriangles[i * 3 + 2]];
+
+            distconstraints.Add( new DistanceConstraint(p_0, p_1, (p_0.x - p_1.x).magnitude));
+            distconstraints.Add( new DistanceConstraint(p_0, p_2, (p_0.x - p_2.x).magnitude));
+            distconstraints.Add( new DistanceConstraint(p_1, p_2, (p_1.x - p_2.x).magnitude));
+        }
+
     }
+    /*void Update()
+    {
+        // from:https://github.com/yuki-koyama/elasty/blob/692a41953c16243a0d75374d2218176b9b238c86/src/engine.cpp
+        // 依照每秒幾個frame設定
+        float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
+        //重力模擬       
+        for(int substep=0; substep<5; substep++)
+        {
+            for(int i=0;i<myball.Length;i++)
+            {//f=ma, a=f*1/m = f*w
+                myball[i].v = myball[i].v + m_delta_physics_time * myball[i].w * myball[i].f;
+                myball[i].p = myball[i].x + m_delta_physics_time * myball[i].v;
+            }
+            // Project Particles
+            int solverIterators=10;
+            for (int i = 0; i < solverIterators; i++){
+                // foreach(EnvironmentalCollisionConstraint constraint in collconstraints)
+                // {
+                //     constraint.projectParticles();
+                // }
+                foreach(DistanceConstraint constraint in distconstraints){
+                    constraint.projectParticles();
+                }
+                foreach(FixedPointConstraint constraint in fixconstraints)
+                {
+                    constraint.projectParticles();
+                }
+                
+            }
+            //更新 GameObject localPosition & Particles
+            for(int i=0;i<myball.Length;i++)
+            {
+                //更新 GameObject's localPosition
+                sphere[i].transform.localPosition = myball[i].p;
+                //更新 particle
+                myball[i].v = (myball[i].p- myball[i].x) * (1.0f/m_delta_physics_time);
+                myball[i].x = myball[i].p;
+                //Update velocities
+                myball[i].v*=0.9999f;
+            }
+        }
+    }*/
     void genVertices()
     {
         // Vertices

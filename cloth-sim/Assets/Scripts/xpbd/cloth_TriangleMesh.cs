@@ -8,14 +8,18 @@ public class cloth_TriangleMesh : MonoBehaviour
     int vertical_resolution=50;//垂直
     List<Vector3> vertices;
     Vector3[] myVertices=new Vector3[2626];
+    Particle[] ball=new Particle[2626];
     List<int> triangles;
     int[] myTriangles=new int[15150];
     int[,] m_triangle_list=new int[5050,3];
     List<Vector2> uvs;
     Vector2[] myUV;
     float[,] m_uv_list=new float[5050,6]; // 6=TriangleMesh三頂點的uv
+    List<DistanceConstraint> distconstraints = new List<DistanceConstraint>();
+    List<FixedPointConstraint> fixconstraints = new List<FixedPointConstraint>();
     public Material material;
     Mesh mesh;
+    public GameObject myCube;
     void Start()
     {
         vertices = new List<Vector3>();
@@ -38,16 +42,12 @@ public class cloth_TriangleMesh : MonoBehaviour
         //設置頂點
         Vector3[] myVertices=vertices.ToArray();
         mesh.vertices=myVertices;
-        print("myVertices.Length: "+ myVertices.Length);
         //設置三角形頂點順序，順時針設置
         int[] myTriangles=triangles.ToArray();
         mesh.triangles=myTriangles;
-        //for(int i=0;i<triangles.Count;i++){print("triangle["+i+"]: "+triangles[i]);}
-        print("myTriangles.Length: "+ myTriangles.Length);
         //設置uv
         Vector2[] myUV=uvs.ToArray();
         mesh.uv=myUV;
-        print("myUV.Length: "+ myUV.Length);
     }
     void genVertices()
     {
@@ -62,7 +62,7 @@ public class cloth_TriangleMesh : MonoBehaviour
                 //print("v: "+v);
                 float x = (u - 0.5f) * 2;
                 float y = (v - 0.5f) * 2;
-                print("y: "+y);
+                //print("y: "+y);
                 vertices.Add(new Vector3(x, 0, y));
                 uvs.Add(new Vector2(u, v));
                 // Additional vetex at the even-indexed row
