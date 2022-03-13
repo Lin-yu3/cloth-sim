@@ -17,37 +17,24 @@ public class cloth_sim : MonoBehaviour
     List<DistanceConstraint> distconstraints = new List<DistanceConstraint>();
     List<FixedPointConstraint> fixconstraints = new List<FixedPointConstraint>();
     List<EnvironmentalCollisionConstraint> collconstraints = new List<EnvironmentalCollisionConstraint>();
-    public GameObject myCube;
+    //public GameObject myCube;
     void Start()
     {
         genVertices();
         genTriangles();
-        Particle[] myball=ball.ToArray();
         int[] myTriangles=triangles.ToArray();
+        Particle[] myball=ball.ToArray();
         for(int i=0;i<myball.Length;i++)
         {
-            myball[i].x+=new Vector3(0,2,1);
-            sphere[i]=Instantiate(myCube, myball[i].x, new Quaternion(0,90,0,0));
-            //釘住右上角,左上角
-            float range_radius = 0.1f;
-            if ((myball[i].x - new Vector3(1,2,0)).magnitude < range_radius)
-            {
-                fixconstraints.Add( new FixedPointConstraint(myball[i],myball[i].x));
-                myball[i].m = 1;//質量很大,就不會被DistanceConstraint影響
-                myball[i].w = 1/myball[i].m;
-            }
-            else if ((myball[i].x - new Vector3(-1,2,0)).magnitude < range_radius)
-            {
-                fixconstraints.Add( new FixedPointConstraint(myball[i],myball[i].x));
-                myball[i].m = 1;//質量很大,就不會被DistanceConstraint影響
-                myball[i].w = 1/myball[i].m;
-            }
-            else
-            {
-                myball[i].f = new Vector3(0, -9.8f, 0);//注意!!!重力值亂設!!!
-                myball[i].m = 1;//質量很大,就不會被DistanceConstraint影響
-                myball[i].w = 1/myball[i].m;    
-            }   
+            sphere[i] = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            sphere[i].transform.localScale = new Vector3(0.008f, 0.008f, 0.008f);
+            sphere[i].transform.SetParent(transform);
+            sphere[i].transform.localPosition = myball[i].x; 
+            myball[i].v=new Vector3(0,0,0);
+            myball[i].m=1/myball.Length;
+            myball[i].w=1/myball[i].m;
+            myball[i].f = new Vector3(0, -9.8f, 0);
+            print("myball["+i+"]: "+myball[i].x);
         }
         for ( int i = 0; i < myTriangles.Length / 3; ++i)
         {
@@ -59,28 +46,49 @@ public class cloth_sim : MonoBehaviour
             distconstraints.Add( new DistanceConstraint(p_0, p_2, (p_0.x - p_2.x).magnitude));
             distconstraints.Add( new DistanceConstraint(p_1, p_2, (p_1.x - p_2.x).magnitude));
         }
+        float range_radius = 0.1f;
+        for (int i=0;i<myball.Length;i++)
+        {
+            // Add small perturb
+            myball[i].v=new Vector3(Random.Range(-0.001f,+0.001f),Random.Range(-0.001f,+0.001f),Random.Range(-0.001f,+0.001f));
 
+            if ((myball[i].x - new Vector3(1,2,0)).magnitude < range_radius)
+            {
+                fixconstraints.Add( new FixedPointConstraint(myball[i],myball[i].x));
+            }
+            if ((myball[i].x - new Vector3(-1,2,0)).magnitude < range_radius)
+            {
+                fixconstraints.Add( new FixedPointConstraint(myball[i],myball[i].x));
+            }
+        } 
     }
-    /*void Update()
+    void Update()
     {
         // from:https://github.com/yuki-koyama/elasty/blob/692a41953c16243a0d75374d2218176b9b238c86/src/engine.cpp
         // 依照每秒幾個frame設定
-        float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
-        //重力模擬       
-        for(int substep=0; substep<5; substep++)
+        for(int substep=0;substep<5;substep++)
         {
+            float m_delta_physics_time = 1/300f; // 公式:delta_frame_time/substep
+            //重力模擬      
             for(int i=0;i<myball.Length;i++)
             {//f=ma, a=f*1/m = f*w
                 myball[i].v = myball[i].v + m_delta_physics_time * myball[i].w * myball[i].f;
                 myball[i].p = myball[i].x + m_delta_physics_time * myball[i].v;
             }
+            // Reset Lagrange multipliers (only necessary for XPBD)
+            foreach(DistanceConstraint constraint in distconstraints){
+                constraint.m_lagrange_multiplier=0;
+            }
+            foreach(FixedPointConstraint constraint in fixconstraints){
+                constraint.m_lagrange_multiplier=0;
+            }
             // Project Particles
             int solverIterators=10;
             for (int i = 0; i < solverIterators; i++){
-                // foreach(EnvironmentalCollisionConstraint constraint in collconstraints)
-                // {
-                //     constraint.projectParticles();
-                // }
+                foreach(EnvironmentalCollisionConstraint constraint in collconstraints)
+                {
+                    constraint.projectParticles();
+                }
                 foreach(DistanceConstraint constraint in distconstraints){
                     constraint.projectParticles();
                 }
@@ -102,7 +110,7 @@ public class cloth_sim : MonoBehaviour
                 myball[i].v*=0.9999f;
             }
         }
-    }*/
+    }
     void genVertices()
     {
         // Vertices
