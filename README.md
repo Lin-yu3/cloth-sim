@@ -19,7 +19,9 @@ use PBD or XPBD to simulate cloth
 ## xpbd folder
 含有 1 個範例
 * cloth_sim
-(delta_frame_time, num_iters, num_substep, AlgorithmType)=(1/60, 10, 5, XPBD)
+以頂點測試加重力,constraint是否能運作 (delta_frame_time, num_iters, num_substep, AlgorithmType)=(1/60, 10, 5, XPBD)
+* cloth_TriangleMesh
+畫 mesh
 
 ## 尚未解決
 1. CollisionConstraint 布停留在物體表面
@@ -43,3 +45,5 @@ use PBD or XPBD to simulate cloth
 12. 透過 m_triangle_list 和 m_uv_list 來管理vertices, 以便判斷是哪條edge 及 連接哪些triangle
 13. TODO(3/3): 先做出能擺盪的布料，三角mesh的三邊須加上distancd constraint, m_uv_list陣列包陣列的問題可晚點解決(自己件資料結構即可) 
 14. vertice位置值更新為NAN, 因此無法畫出mesh, 解決方法先用cube繪製頂點比較容易Debug
+15. 發現x,z的值與float u,v有關，找到bug，問題出在整數除以整數，應改為整數除以浮點數
+16. NullReferenceException: Object reference not set to an instance of an object cloth_sim.Update() (Bug at Assets/Scripts/xpbd/cloth_sim.cs:75)
