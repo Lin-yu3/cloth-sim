@@ -31,7 +31,7 @@ public class cloth_sim : MonoBehaviour
             myball[i].f = new Vector3(0, -9.8f, 0);
             //print("sphere["+i+"]: "+sphere[i].transform.localPosition);
         }
-        float range_radius = 0.1f;
+        float range_radius = 0.1f;//0.008f;
         for (int i=0;i<myball.Length;i++)
         {
             // Add small perturb
@@ -67,7 +67,7 @@ public class cloth_sim : MonoBehaviour
        
         for(int substep=0;substep<5;substep++)
         {
-            float m_delta_physics_time = 1/3f; // 公式:delta_frame_time/substep
+            float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
             //重力模擬      
             for(int i=0;i<myball.Length;i++)
             {//f=ma, a=f*1/m = f*w
@@ -83,7 +83,7 @@ public class cloth_sim : MonoBehaviour
                 constraint.m_lagrange_multiplier=0;
             }
             // Project Particles
-            int solverIterators=10;
+            int solverIterators=15;
             for (int i = 0; i < solverIterators; i++){
                 foreach(DistanceConstraint constraint in distconstraints){
                     constraint.projectParticles();
@@ -107,6 +107,7 @@ public class cloth_sim : MonoBehaviour
             }
         }
     }
+    
     void genVertices()
     {
         // Vertices
