@@ -27,7 +27,7 @@ use PBD or XPBD to simulate cloth
 1. CollisionConstraint 布停留在物體表面
 2. IsometricBendingConstraint(p_0,p_1,p_2,p_3) 分別要放什麼?(ok)
 3. 測試 IsometricBendingConstraint(ok)
-4. 改成 XPBD 後, 在 xpbd04_30x30cloth範例中 布料會不斷向下拉, 單獨測試DistanceConstraint, FixedPointConstraint都沒問題? 修改decay rate就不會一直向下拉, 但布料速度超慢
+4. 如何調整iters次數, m_delta_physics_time, 以及DistanceConstraint, FixedPointConstraint的 m_delta_time才能讓布料擺盪快速且不會過度拉長
 
 ## 每週進度
 1. 執行 yuki的elasty專案, 並與我們實作的成果做比較
