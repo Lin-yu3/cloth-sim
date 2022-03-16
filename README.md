@@ -27,7 +27,7 @@ use PBD or XPBD to simulate cloth
 1. CollisionConstraint 布停留在物體表面
 2. IsometricBendingConstraint(p_0,p_1,p_2,p_3) 分別要放什麼?(ok)
 3. 測試 IsometricBendingConstraint(ok)
-4. 改成 XPBD 後, 在 xpbd04_30x30cloth範例中 布料會不斷向下拉, 單獨測試DistanceConstraint, FixedPointConstraint都沒問題? 修改decay rate就不會一直向下拉, 但布料速度超慢
+4. 如何調整iters次數, m_delta_physics_time, 以及DistanceConstraint, FixedPointConstraint的 m_delta_time才能讓布料擺盪快速且不會過度拉長
 
 ## 每週進度
 1. 執行 yuki的elasty專案, 並與我們實作的成果做比較
@@ -46,4 +46,5 @@ use PBD or XPBD to simulate cloth
 13. TODO(3/3): 先做出能擺盪的布料，三角mesh的三邊須加上distancd constraint, m_uv_list陣列包陣列的問題可晚點解決(自己件資料結構即可) 
 14. vertice位置值更新為NAN, 因此無法畫出mesh, 解決方法先用cube繪製頂點比較容易Debug
 15. 發現x,z的值與float u,v有關，找到bug，問題出在整數除以整數，應改為整數除以浮點數
-16. NullReferenceException: Object reference not set to an instance of an object cloth_sim.Update() (Bug at Assets/Scripts/xpbd/cloth_sim.cs:75)
+16. 目前狀況: myball[i] 沒有初始化,因為宣告了2個,就錯了。
+17. (3/14) Debug 3個錯誤: (1) myball[i].w = 1.0f /2626, (2) fixconstraints.Count 竟然是0, (3) my_delta_physics_time 乘上 myball[i].f 的那行,太小了, 沒有效果。
