@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class cloth_sim : MonoBehaviour
 {
-    int horizontal_resolution=50;//水平
-    int vertical_resolution=50;//垂直
-    GameObject[] sphere=new GameObject[2626];
+    int horizontal_resolution=30;//水平
+    int vertical_resolution=30;//垂直
+    GameObject[] sphere=new GameObject[976];
     List<Particle> ball=new List<Particle>();
-    Particle[] myball=new Particle[2626];
+    Particle[] myball=new Particle[976];
     List<int> triangles=new List<int>();
-    int[] myTriangles=new int[15150];
+    int[] myTriangles=new int[5490];
     List<DistanceConstraint> distconstraints = new List<DistanceConstraint>();
     List<FixedPointConstraint> fixconstraints = new List<FixedPointConstraint>();
 
@@ -18,12 +18,14 @@ public class cloth_sim : MonoBehaviour
     {
         genVertices();
         genTriangles();
+        // print("triangles.Count: "+triangles.Count);
+        // print("ball.Count: "+ball.Count);
         myTriangles=triangles.ToArray();
         myball=ball.ToArray();
         for(int i=0;i<myball.Length;i++)
         {
             sphere[i] = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            sphere[i].transform.localScale = new Vector3(0.008f, 0.008f, 0.008f);
+            sphere[i].transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
             sphere[i].transform.SetParent(transform);
             sphere[i].transform.localPosition = myball[i].x; 
             myball[i].m=1;

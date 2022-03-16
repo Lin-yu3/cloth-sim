@@ -4,35 +4,71 @@ using UnityEngine;
 
 public class cloth_TriangleMesh : MonoBehaviour
 {
-    int horizontal_resolution=50;//水平
-    int vertical_resolution=50;//垂直
-    List<Vector3> vertices;
-    Vector3[] myVertices=new Vector3[2626];
-    Particle[] ball=new Particle[2626];
-    List<int> triangles;
-    int[] myTriangles=new int[15150];
-    int[,] m_triangle_list=new int[5050,3];
-    List<Vector2> uvs;
+    int horizontal_resolution=30;//水平
+    int vertical_resolution=30;//垂直
+    List<Vector3> vertices= new List<Vector3>();
+    Vector3[] myVertices=new Vector3[976];
+    Particle[] ball=new Particle[976];
+    List<int> triangles=new List<int>();
+    int[] myTriangles=new int[5490];
+    int[,] m_triangle_list=new int[1830,3];
+    List<Vector2> uvs= new List<Vector2>();
     Vector2[] myUV;
-    float[,] m_uv_list=new float[5050,6]; // 6=TriangleMesh三頂點的uv
+    float[,] m_uv_list=new float[1830,6]; // 6=TriangleMesh三頂點的uv
     List<DistanceConstraint> distconstraints = new List<DistanceConstraint>();
     List<FixedPointConstraint> fixconstraints = new List<FixedPointConstraint>();
     public Material material;
     Mesh mesh;
-    public GameObject myCube;
     void Start()
     {
-        vertices = new List<Vector3>();
-        triangles=new List<int>();
-        uvs = new List<Vector2>();
         genVertices();
         genTriangles();
-        DrawMesh();
+        DrawMeshSetConstraint();
     }
     void Update()
     {
+        for(int substep=0;substep<5;substep++)
+        {
+            float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
+            //重力模擬      
+            for(int i=0;i<ball.Length;i++)
+            {//f=ma, a=f*1/m = f*w
+                ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
+                ball[i].p = ball[i].x + m_delta_physics_time * ball[i].v;
+            }
+            // Reset Lagrange multipliers (only necessary for XPBD)
+            foreach(DistanceConstraint constraint in distconstraints){
+                constraint.m_lagrange_multiplier=0;
+            }
+            foreach(FixedPointConstraint constraint in fixconstraints){
+                constraint.m_lagrange_multiplier=0;
+            }
+            // Project Particles
+            int solverIterators=10;
+            for (int i = 0; i < solverIterators; i++){
+                foreach(DistanceConstraint constraint in distconstraints){
+                    constraint.projectParticles();
+                }
+                foreach(FixedPointConstraint constraint in fixconstraints)
+                {
+                    constraint.projectParticles();
+                }  
+            }
+            //更新 GameObject localPosition & Particles
+            for(int i=0;i<ball.Length;i++)
+            {
+                //更新 GameObject's localPosition
+                myVertices[i] = ball[i].p;
+                mesh.vertices=myVertices;
+                //更新 particle
+                ball[i].v = (ball[i].p- ball[i].x) * (1.0f/m_delta_physics_time);
+                ball[i].x = ball[i].p;
+                //Update velocities
+                ball[i].v*=0.9999f;
+            }
+        }
     }
-    void DrawMesh()
+    void DrawMeshSetConstraint()
     {
         gameObject.AddComponent<MeshFilter>();
         gameObject.AddComponent<MeshRenderer>();
@@ -40,14 +76,52 @@ public class cloth_TriangleMesh : MonoBehaviour
         mesh = GetComponent<MeshFilter>().mesh;
         mesh.Clear();
         //設置頂點
-        Vector3[] myVertices=vertices.ToArray();
+        for(int i=0;i<vertices.Count;i++){ vertices[i]+=new Vector3(0,2,1);}
+        myVertices=vertices.ToArray();
         mesh.vertices=myVertices;
+    
         //設置三角形頂點順序，順時針設置
-        int[] myTriangles=triangles.ToArray();
+        myTriangles=triangles.ToArray();
         mesh.triangles=myTriangles;
         //設置uv
         Vector2[] myUV=uvs.ToArray();
         mesh.uv=myUV;
+
+        for(int i=0;i<myVertices.Length;i++)
+        {
+            ball[i] = new Particle(myVertices[i]);
+            myVertices[i] = ball[i].x;
+            ball[i].v=new Vector3(Random.Range(-0.001f,+0.001f),Random.Range(-0.001f,+0.001f),Random.Range(-0.001f,+0.001f));
+        }
+        //釘住右上角,左上角
+        float range_radius = 0.1f;
+        for (int i=0;i<myVertices.Length;i++)
+        {
+            ball[i].m = 1;
+            ball[i].w = 1.0f/ball[i].m;
+            ball[i].f = new Vector3(0, -9.8f, 0);
+            if ((ball[i].x - new Vector3(1,2,0)).magnitude < range_radius)
+            {
+                fixconstraints.Add( new FixedPointConstraint(ball[i],ball[i].x));   
+            }
+            else if ((ball[i].x - new Vector3(-1,2,0)).magnitude < range_radius)
+            {
+                fixconstraints.Add( new FixedPointConstraint(ball[i],ball[i].x));
+            }
+        }
+        print("fixconstraints.Count: "+ fixconstraints.Count);
+        for ( int i = 0; i < myTriangles.Length / 3; ++i)
+        {
+            Particle p_0 = ball[myTriangles[i * 3 + 0]];
+            Particle p_1 = ball[myTriangles[i * 3 + 1]];
+            Particle p_2 = ball[myTriangles[i * 3 + 2]];
+
+            distconstraints.Add( new DistanceConstraint(p_0, p_1, (p_0.x - p_1.x).magnitude));
+            distconstraints.Add( new DistanceConstraint(p_0, p_2, (p_0.x - p_2.x).magnitude));
+            distconstraints.Add( new DistanceConstraint(p_1, p_2, (p_1.x - p_2.x).magnitude));
+        }
+        print("distconstraints.Count: "+distconstraints.Count);
+
     }
     void genVertices()
     {
