@@ -18,8 +18,6 @@ public class cloth_sim : MonoBehaviour
     {
         genVertices();
         genTriangles();
-        // print("triangles.Count: "+triangles.Count);
-        // print("ball.Count: "+ball.Count);
         myTriangles=triangles.ToArray();
         myball=ball.ToArray();
         for(int i=0;i<myball.Length;i++)
