@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class cloth_hit_sphere : MonoBehaviour
 {
+    public Material material;
     public GameObject myPrefab;
     public int horizontal_resolution=30;//水平
     public int vertical_resolution=30;//垂直
-    public Material material;
     public bool MOVING_SPHERE_COLLISION = false;
     List<Vector3> vertices=new List<Vector3>();
     Vector3[] myVertices=new Vector3[976];
@@ -27,7 +27,12 @@ public class cloth_hit_sphere : MonoBehaviour
         genVertices();
         genTriangles();
         DrawMeshSetConstraint();
-        sphere=Instantiate(myPrefab, new Vector3(0,0.5f,0), Quaternion.identity);
+        if(MOVING_SPHERE_COLLISION==false){
+            sphere=Instantiate(myPrefab, new Vector3(0,0.5f,0), Quaternion.identity);
+        }
+        else{
+            sphere=Instantiate(myPrefab, new Vector3(0,0.5f,3), Quaternion.identity);
+        }
     }
     void Update()
     {
@@ -54,8 +59,7 @@ public class cloth_hit_sphere : MonoBehaviour
             // Project Particles
             int solverIterators=10;
             for (int i = 0; i < solverIterators; i++){
-                foreach(EnvironmentalCollisionConstraint constraint in collconstraints)
-                {
+                foreach(EnvironmentalCollisionConstraint constraint in collconstraints){
                     constraint.projectParticles();
                 }
                 foreach(DistanceConstraint constraint in distconstraints){
@@ -98,7 +102,7 @@ public class cloth_hit_sphere : MonoBehaviour
         myTriangles=triangles.ToArray();
         mesh.triangles=myTriangles;
         //設置uv
-        Vector2[] myUV=uvs.ToArray();
+        myUV=uvs.ToArray();
         mesh.uv=myUV;
 
         for(int i=0;i<myVertices.Length;i++)
@@ -141,9 +145,9 @@ public class cloth_hit_sphere : MonoBehaviour
     {
         if(MOVING_SPHERE_COLLISION==false)
         {
-            Vector3 center=new Vector3(0,0.5f,0);
+            Vector3 center= sphere.transform.localPosition;
             float tolerance=0.01f;
-            float radius=0.25f+0.01f;//大圓半徑+小圓半徑?
+            float radius=0.5f+0.01f;//大圓半徑+小圓半徑?
             for(int i=0; i<ball.Length; i++)
             {
                 Vector3 direction = ball[i].x - center;
@@ -158,11 +162,11 @@ public class cloth_hit_sphere : MonoBehaviour
         else if(MOVING_SPHERE_COLLISION==true)
         {
             // Collision with a moving sphere
-            sphere.transform.localPosition+=new Vector3(0,0,0.1f);
+            sphere.transform.localPosition+=new Vector3(0,0,-0.03f);
             float k= sphere.transform.position.z;
             Vector3 center=new Vector3(0, 0.5f, k);
             float tolerance= 0.01f;
-            float radius=0.25f+0.005f;//大圓半徑+小圓半徑?
+            float radius=0.5f+0.01f;//大圓半徑+小圓半徑?
             for(int i=0; i<ball.Length; i++)
             {
                 Vector3 direction = ball[i].x - center;
