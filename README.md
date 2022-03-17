@@ -17,14 +17,14 @@ use PBD or XPBD to simulate cloth
 * pbd06_collisionconstraint
 
 ## xpbd folder
-含有 1 個範例
+含有 3 個範例
 * cloth_sim
-以頂點測試加重力,constraint是否能運作 (delta_frame_time, num_iters, num_substep, AlgorithmType)=(1/60, 10, 5, XPBD)
+以 cube 繪製頂點,檢查頂點是否受重力向下,且constraint順利運作 (delta_frame_time, num_iters, num_substep, AlgorithmType)=(1/60, 10, 5, XPBD)
 * cloth_TriangleMesh
-畫 mesh
+以 mesh來繪製布料, 模擬速度提升許多
 
 ## 尚未解決
-1. CollisionConstraint 布停留在物體表面
+1. CollisionConstraint 布停留在物體表面(ok)
 2. IsometricBendingConstraint(p_0,p_1,p_2,p_3) 分別要放什麼?(ok)
 3. 測試 IsometricBendingConstraint(ok)
 4. 如何調整iters次數, m_delta_physics_time, 以及DistanceConstraint, FixedPointConstraint的 m_delta_time才能讓布料擺盪快速且不會過度拉長
@@ -48,3 +48,4 @@ use PBD or XPBD to simulate cloth
 15. 發現x,z的值與float u,v有關，找到bug，問題出在整數除以整數，應改為整數除以浮點數
 16. 目前狀況: myball[i] 沒有初始化,因為宣告了2個,就錯了。
 17. (3/14) Debug 3個錯誤: (1) myball[i].w = 1.0f /2626, (2) fixconstraints.Count 竟然是0, (3) my_delta_physics_time 乘上 myball[i].f 的那行,太小了, 沒有效果。
+18. 增加兩種collision: (1) SPHERE_COLLISION (2)MOVING_SPHERE_COLLISION 
