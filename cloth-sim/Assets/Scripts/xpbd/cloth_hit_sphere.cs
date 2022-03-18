@@ -39,7 +39,14 @@ public class cloth_hit_sphere : MonoBehaviour
         for(int substep=0;substep<5;substep++)
         {
             float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
-            //重力模擬      
+            //Apply external forces
+            for(int i=0;i<ball.Length;i++)
+            {
+                Vector3 g=new Vector3(0,-9.8f,0);
+                ball[i].f=ball[i].m*g;
+            }
+            //applyAerodynamicForces();
+
             for(int i=0;i<ball.Length;i++)
             {//f=ma, a=f*1/m = f*w
                 ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
@@ -86,6 +93,7 @@ public class cloth_hit_sphere : MonoBehaviour
             collconstraints.Clear();
         }
     }
+
     void DrawMeshSetConstraint()
     {
         gameObject.AddComponent<MeshFilter>();
@@ -139,7 +147,6 @@ public class cloth_hit_sphere : MonoBehaviour
             distconstraints.Add( new DistanceConstraint(p_1, p_2, (p_1.x - p_2.x).magnitude));
         }
         print("distconstraints.Count: "+distconstraints.Count);
-
     }
     void generateCollisionConstraints()
     {
@@ -179,6 +186,48 @@ public class cloth_hit_sphere : MonoBehaviour
             }
         } 
     }
+    void applyAerodynamicForces(Vector3 global_velocity, float drag_coeff, float lift_coeff)
+    {
+        float rho = 1.225f; // Taken from Wikipedia: https://en.wikipedia.org/wiki/Density_of_air
+
+        //(drag_coeff >= lift_coeff);
+        for ( int i = 0; i < myTriangles.Length / 3; ++i)
+        {
+            Vector3 x_0 = ball[myTriangles[i * 3 + 0]].x;
+            Vector3 x_1 = ball[myTriangles[i * 3 + 1]].x;
+            Vector3 x_2 = ball[myTriangles[i * 3 + 2]].x;
+
+            Vector3 v_0 = ball[myTriangles[i * 3 + 0]].v;
+            Vector3 v_1 = ball[myTriangles[i * 3 + 1]].v;
+            Vector3 v_2 = ball[myTriangles[i * 3 + 2]].v;
+
+            float m_0 = ball[myTriangles[i * 3 + 0]].m;
+            float m_1 = ball[myTriangles[i * 3 + 1]].m;
+            float m_2 = ball[myTriangles[i * 3 + 2]].m;
+
+            float m_sum = m_0 + m_1 + m_2;
+
+            // Calculate the weighted average of the particle velocities
+            Vector3 v_triangle = (m_0 * v_0 + m_1 * v_1 + m_2 * v_2) / m_sum;
+
+            // Calculate the relative velocity of the triangle
+            Vector3 v_rel = v_triangle - global_velocity;
+            float v_rel_squared = v_rel.sqrMagnitude;
+
+            Vector3 cross= Vector3.Cross(x_1 - x_0, x_2 - x_0) ;
+            float area = 0.5f * cross.magnitude;
+            Vector3 n_either_side = cross.normalized;
+            Vector3 n = (Vector3.Dot(n_either_side,v_rel) > 0.0) ? n_either_side : -n_either_side;
+
+            float coeff = 0.5f * rho * area;
+
+            // Note: This wind force model was proposed by [Wilson+14]
+            Vector3 f = -coeff * ((drag_coeff - lift_coeff) * Vector3.Dot(v_rel,n) * v_rel + lift_coeff * v_rel_squared * n);
+            ball[myTriangles[i * 3 + 0]].f += (m_0 / m_sum) * f;
+            ball[myTriangles[i * 3 + 1]].f += (m_1 / m_sum) * f;
+            ball[myTriangles[i * 3 + 2]].f += (m_2 / m_sum) * f;
+        }
+    } 
     void genVertices()
     {
         // Vertices
