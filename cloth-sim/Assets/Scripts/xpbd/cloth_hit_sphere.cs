@@ -1,14 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class cloth_hit_sphere : MonoBehaviour
 {
+    
     public Material material;
     public GameObject myPrefab;
     public int horizontal_resolution=30;//水平
     public int vertical_resolution=30;//垂直
     public bool MOVING_SPHERE_COLLISION = false;
+    enum customExpand { Without_Aerodynamics, With_Aerodynamics, Wind, Wind_High_Drag, Wind_High_Lift}
+    [SerializeField] customExpand Condition;
+    float wind_velocity;
+    float drag_coeff;
+    float lift_coeff;
     List<Vector3> vertices=new List<Vector3>();
     Vector3[] myVertices=new Vector3[976];
     Particle[] ball=new Particle[976];
@@ -21,7 +30,40 @@ public class cloth_hit_sphere : MonoBehaviour
     List<EnvironmentalCollisionConstraint> collconstraints = new List<EnvironmentalCollisionConstraint>();
     GameObject sphere;
     Mesh mesh;
-     
+    #region Editor
+#if UNITY_EDITOR
+    [CustomEditor(typeof(cloth_hit_sphere))]
+    public class ConditionEditor : Editor 
+    {
+        public override void OnInspectorGUI()
+        {
+            base.OnInspectorGUI();
+            cloth_hit_sphere condition=(cloth_hit_sphere)target;
+            DrawDetails(condition);
+        }
+        private static void DrawDetails(cloth_hit_sphere condition)
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Details");
+            
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("wind_velocity",GUILayout.MaxWidth(80));
+            condition.wind_velocity=EditorGUILayout.FloatField(condition.wind_velocity);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("drag_coeff",GUILayout.MaxWidth(80));
+            condition.wind_velocity=EditorGUILayout.FloatField(condition.drag_coeff);
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("lift_coeff",GUILayout.MaxWidth(80));
+            condition.wind_velocity=EditorGUILayout.FloatField(condition.lift_coeff);
+            EditorGUILayout.EndHorizontal(); 
+        }
+    }
+#endif
+    #endregion
     void Start()
     {
         genVertices();
@@ -45,6 +87,8 @@ public class cloth_hit_sphere : MonoBehaviour
                 Vector3 g=new Vector3(0,-9.8f,0);
                 ball[i].f=ball[i].m*g;
             }
+            // FunctionLibrary.Function f = FunctionLibrary.GetFunction(function);
+            WhichCondition();
             //applyAerodynamicForces();
 
             for(int i=0;i<ball.Length;i++)
@@ -93,7 +137,6 @@ public class cloth_hit_sphere : MonoBehaviour
             collconstraints.Clear();
         }
     }
-
     void DrawMeshSetConstraint()
     {
         gameObject.AddComponent<MeshFilter>();
@@ -185,6 +228,10 @@ public class cloth_hit_sphere : MonoBehaviour
                 }
             }
         } 
+    }
+    void WhichCondition()
+    {
+        
     }
     void applyAerodynamicForces(Vector3 global_velocity, float drag_coeff, float lift_coeff)
     {
