@@ -2,13 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class cloth_hit_sphere : MonoBehaviour
-{  
+public class aerodynamics : MonoBehaviour
+{
     public Material material;
     public GameObject myPrefab;
     public int horizontal_resolution=30;//水平
     public int vertical_resolution=30;//垂直
-    public bool MOVING_SPHERE_COLLISION = false;
     public enum Condition { Without_Aerodynamics, With_Aerodynamics, Wind, Wind_High_Drag, Wind_High_Lift}
     public Condition condition;
     List<Vector3> vertices=new List<Vector3>();
@@ -29,16 +28,11 @@ public class cloth_hit_sphere : MonoBehaviour
         genVertices();
         genTriangles();
         DrawMeshSetConstraint();
-        if(MOVING_SPHERE_COLLISION==false){
-            sphere=Instantiate(myPrefab, new Vector3(0,0.5f,0), Quaternion.identity);
-        }
-        else{
-            sphere=Instantiate(myPrefab, new Vector3(0,0.5f,3), Quaternion.identity);
-        }
+        sphere=Instantiate(myPrefab, new Vector3(0,0.5f,0), Quaternion.identity);
     }
     void Update()
     {
-        for(int substep=0;substep<5;substep++)
+        for(int substep=0;substep<4;substep++)
         {
             float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
             //Apply external forces
@@ -48,7 +42,7 @@ public class cloth_hit_sphere : MonoBehaviour
                 ball[i].f=ball[i].m*g;
             }
             //applyAerodynamicForces
-            applyAerodynamicForces(new Vector3(0,0,0) , 0.1f, 0.06f);
+            WhichCondition();
             for(int i=0;i<ball.Length;i++)
             {//f=ma, a=f*1/m = f*w
                 ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
@@ -66,7 +60,7 @@ public class cloth_hit_sphere : MonoBehaviour
             }
             generateCollisionConstraints();
             // Project Particles
-            int solverIterators=10;
+            int solverIterators=16;
             for (int i = 0; i < solverIterators; i++){
                 foreach(EnvironmentalCollisionConstraint constraint in collconstraints){
                     constraint.projectParticles();
@@ -151,41 +145,42 @@ public class cloth_hit_sphere : MonoBehaviour
     }
     void generateCollisionConstraints()
     {
-        if(MOVING_SPHERE_COLLISION==false)
+        Vector3 center= sphere.transform.localPosition;
+        float tolerance=0.01f;
+        float radius=0.5f+0.01f;//大圓半徑+小圓半徑?
+        for(int i=0; i<ball.Length; i++)
         {
-            Vector3 center= sphere.transform.localPosition;
-            float tolerance=0.01f;
-            float radius=0.5f+0.01f;//大圓半徑+小圓半徑?
-            for(int i=0; i<ball.Length; i++)
+            Vector3 direction = ball[i].x - center;
+            if (direction.magnitude< radius + tolerance)
             {
-                Vector3 direction = ball[i].x - center;
-                if (direction.magnitude< radius + tolerance)
-                {
-                    Vector3 normal = direction.normalized;
-                    float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius;
-                    collconstraints.Add( new EnvironmentalCollisionConstraint(ball[i], normal, distance));
-                }
+                Vector3 normal = direction.normalized;
+                float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius;
+                collconstraints.Add( new EnvironmentalCollisionConstraint(ball[i], normal, distance));
             }
         }
-        else if(MOVING_SPHERE_COLLISION==true)
-        {
-            // Collision with a moving sphere
-            sphere.transform.localPosition+=new Vector3(0,0,-0.03f);
-            float k= sphere.transform.position.z;
-            Vector3 center=new Vector3(0, 0.5f, k);
-            float tolerance= 0.01f;
-            float radius=0.5f+0.01f;//大圓半徑+小圓半徑?
-            for(int i=0; i<ball.Length; i++)
-            {
-                Vector3 direction = ball[i].x - center;
-                if (direction.magnitude< radius + tolerance)
-                {
-                    Vector3 normal = direction.normalized;
-                    float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius;
-                    collconstraints.Add( new EnvironmentalCollisionConstraint(ball[i], normal, distance));
-                }
-            }
-        } 
+    }
+    void WhichCondition()
+    {
+        if(condition == Condition.Without_Aerodynamics){
+            applyAerodynamicForces(new Vector3(0,0,0) , 0, 0);
+            print("Without_Aerodynamics");
+        }
+        else if(condition == Condition.With_Aerodynamics){
+            applyAerodynamicForces(new Vector3(0,0,0) , 0.06f, 0.03f);
+            print("With_Aerodynamics");
+        }
+        else if(condition == Condition.Wind){
+            applyAerodynamicForces(new Vector3(0,0,8) , 0.08f, 0.03f);
+            print("Wind");
+        }
+        else if(condition == Condition.Wind_High_Drag){
+            applyAerodynamicForces(new Vector3(0,0,8) , 0.08f, 0);
+            print("Wind_High_Drag");
+        }
+        else{
+            applyAerodynamicForces(new Vector3(0,0,8) , 0.08f, 0.08f);
+            print("Wind_High_Lift");
+        }              
     }
     void applyAerodynamicForces(Vector3 global_velocity, float drag_coeff, float lift_coeff)
     {
@@ -312,4 +307,3 @@ public class cloth_hit_sphere : MonoBehaviour
         }
     }
 }
-
