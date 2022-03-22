@@ -28,7 +28,7 @@ public class aerodynamics : MonoBehaviour
         genVertices();
         genTriangles();
         DrawMeshSetConstraint();
-        sphere=Instantiate(myPrefab, new Vector3(0,0.5f,0), Quaternion.identity);
+        sphere=Instantiate(myPrefab, new Vector3(0,1,0), Quaternion.identity);
     }
     void Update()
     {

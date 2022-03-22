@@ -11,7 +11,6 @@ public class cloth_TriangleMesh : MonoBehaviour
     Particle[] ball=new Particle[976];
     List<int> triangles=new List<int>();
     int[] myTriangles=new int[5490];
-    int[,] m_triangle_list=new int[1830,3];
     List<Vector2> uvs= new List<Vector2>();
     Vector2[] myUV;
     float[,] m_uv_list=new float[1830,6]; // 6=TriangleMesh三頂點的uv

@@ -154,8 +154,8 @@ public class cloth_hit_sphere : MonoBehaviour
         if(MOVING_SPHERE_COLLISION==false)
         {
             Vector3 center= sphere.transform.localPosition;
-            float tolerance=0.01f;
-            float radius=0.5f+0.01f;//大圓半徑+小圓半徑?
+            float tolerance=0.05f;
+            float radius=0.5f+0.02f;//大圓半徑+小圓半徑?
             for(int i=0; i<ball.Length; i++)
             {
                 Vector3 direction = ball[i].x - center;
@@ -173,8 +173,8 @@ public class cloth_hit_sphere : MonoBehaviour
             sphere.transform.localPosition+=new Vector3(0,0,-0.03f);
             float k= sphere.transform.position.z;
             Vector3 center=new Vector3(0, 0.5f, k);
-            float tolerance= 0.01f;
-            float radius=0.5f+0.01f;//大圓半徑+小圓半徑?
+            float tolerance= 0.05f;
+            float radius=0.5f+0.02f;//大圓半徑+小圓半徑?
             for(int i=0; i<ball.Length; i++)
             {
                 Vector3 direction = ball[i].x - center;
