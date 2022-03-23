@@ -22,9 +22,12 @@ use PBD or XPBD to simulate cloth
 以 cube 繪製頂點,檢查頂點是否受重力向下,且constraint順利運作 (delta_frame_time, num_iters, num_substep, AlgorithmType)=(1/60, 10, 5, XPBD)
 * cloth_TriangleMesh
 以 mesh來繪製布料, 模擬速度提升許多
-
+* cloth_hit_sphere
+使用 collision constraint 分別針對固定即會移動的碰撞物
+* aerodynamics
+內含 5 種 condition (Vector3 wind_velocity, float drag_coeff, float lift_coeff) 
 ## 尚未解決
-1. CollisionConstraint 布停留在物體表面(ok)
+1. CollisionConstraint 布停留在物體表面
 2. IsometricBendingConstraint(p_0,p_1,p_2,p_3) 分別要放什麼?(ok)
 3. 測試 IsometricBendingConstraint(ok)
 4. 如何調整iters次數, m_delta_physics_time, 以及DistanceConstraint, FixedPointConstraint的 m_delta_time才能讓布料擺盪快速且不會過度拉長
