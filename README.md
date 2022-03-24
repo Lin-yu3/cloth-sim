@@ -27,11 +27,11 @@ use PBD or XPBD to simulate cloth
 * aerodynamics
 內含 5 種 condition (Vector3 wind_velocity, float drag_coeff, float lift_coeff) 
 ## 尚未解決
-Q: CollisionConstraint 布停留在物體表面
-A: 推測可能是 double 和 float 的精確度差異, 導致radius + tolerance 的值，導致把布推到表面後，又陷入 Environment Collision Constraint
-Q. IsometricBendingConstraint(p_0,p_1,p_2,p_3) 分別要放什麼?(ok)
-Q. 測試 IsometricBendingConstraint(ok)
-Q. 如何調整iters次數, m_delta_physics_time, 以及DistanceConstraint, FixedPointConstraint的 m_delta_time才能讓布料擺盪快速且不會過度拉長(ok)
+1. CollisionConstraint 布停留在物體表面
+1. 推測可能是 double 和 float 的精確度差異, 導致radius + tolerance 的值，導致把布推到表面後，又陷入 Environment Collision Constraint
+2. IsometricBendingConstraint(p_0,p_1,p_2,p_3) 分別要放什麼?(ok)
+3. 測試 IsometricBendingConstraint(ok)
+4. 如何調整iters次數, m_delta_physics_time, 以及DistanceConstraint, FixedPointConstraint的 m_delta_time才能讓布料擺盪快速且不會過度拉長(ok)
 
 ## 每週進度
 1. 執行 yuki的elasty專案, 並與我們實作的成果做比較
