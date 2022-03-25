@@ -13,11 +13,14 @@ public class cloth_hit_sphere : MonoBehaviour
     public Condition condition;
     List<Vector3> vertices=new List<Vector3>();
     Vector3[] myVertices=new Vector3[976];
+    Vector3[] myVertices2=new Vector3[976];
     Particle[] ball=new Particle[976];
     List<int> triangles=new List<int>();
     int[] myTriangles=new int[5490];
+    int[] myTriangles2=new int[5490];
     List<Vector2> uvs= new List<Vector2>();
     Vector2[] myUV;
+    Vector2[] myUV2;
     List<DistanceConstraint> distconstraints = new List<DistanceConstraint>();
     List<FixedPointConstraint> fixconstraints = new List<FixedPointConstraint>();
     List<EnvironmentalCollisionConstraint> collconstraints = new List<EnvironmentalCollisionConstraint>();
@@ -106,14 +109,13 @@ public class cloth_hit_sphere : MonoBehaviour
         for(int i=0;i<vertices.Count;i++){ vertices[i]+=new Vector3(0,2,1);}
         myVertices=vertices.ToArray();
         mesh.vertices=myVertices;
-    
         //設置三角形頂點順序，順時針設置
         myTriangles=triangles.ToArray();
         mesh.triangles=myTriangles;
         //設置uv
         myUV=uvs.ToArray();
         mesh.uv=myUV;
-
+        //加些小小的擾動
         for(int i=0;i<myVertices.Length;i++)
         {
             ball[i] = new Particle(myVertices[i]);

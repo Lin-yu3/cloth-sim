@@ -24,7 +24,7 @@ public class cloth_TriangleMesh : MonoBehaviour
         genTriangles();
         DrawMeshSetConstraint();
     }
-    void Update()
+    /*void Update()
     {
         for(int substep=0;substep<5;substep++)
         {
@@ -66,7 +66,7 @@ public class cloth_TriangleMesh : MonoBehaviour
                 ball[i].v*=0.9999f;
             }
         }
-    }
+    }*/
     void DrawMeshSetConstraint()
     {
         gameObject.AddComponent<MeshFilter>();
