@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class cloth_hit_sphere : MonoBehaviour
 {  
+    //from https://github.com/yuki-koyama/elasty/blob/master/examples/cloth-alembic/main.cpp
+    //from https://github.com/yuki-koyama/elasty/blob/master/src/cloth-sim-object.cpp
+    //from https://github.com/yuki-koyama/elasty/blob/master/src/utils.cpp
+    
     public Material material;
     public GameObject myPrefab;
     public int horizontal_resolution=30;//水平
@@ -150,7 +154,10 @@ public class cloth_hit_sphere : MonoBehaviour
             distconstraints.Add( new DistanceConstraint(p_1, p_2, (p_1.x - p_2.x).magnitude));
         }
         print("distconstraints.Count: "+distconstraints.Count);
+        //判斷三角形每條邊與幾個三角形共用
+        
     }
+
     void generateCollisionConstraints()
     {
         if(MOVING_SPHERE_COLLISION==false)
@@ -173,8 +180,8 @@ public class cloth_hit_sphere : MonoBehaviour
         {
             // Collision with a moving sphere
             sphere.transform.localPosition+=new Vector3(0,0,-0.03f);
-            float k= sphere.transform.position.z;
-            Vector3 center=new Vector3(0, 0.5f, k);
+            float posZ= sphere.transform.position.z;
+            Vector3 center=new Vector3(0, 0.5f, posZ);
             float tolerance= 0.05f;
             float radius=0.5f+0.02f;//大圓半徑+小圓半徑?
             for(int i=0; i<ball.Length; i++)

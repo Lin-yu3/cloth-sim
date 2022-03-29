@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class aerodynamics : MonoBehaviour
 {
+    //https://github.com/yuki-koyama/elasty/blob/master/examples/aerodynamics/main.cpp
     public Material material;
     public GameObject myPrefab;
     public int horizontal_resolution=30;//水平

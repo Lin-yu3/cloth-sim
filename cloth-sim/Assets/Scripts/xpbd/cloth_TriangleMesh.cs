@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class cloth_TriangleMesh : MonoBehaviour
 {
+    //from https://github.com/yuki-koyama/elasty/blob/master/examples/cloth-alembic/main.cpp
+    //from https://github.com/yuki-koyama/elasty/blob/master/src/cloth-sim-object.cpp
+    //from https://github.com/yuki-koyama/elasty/blob/master/src/utils.cpp
     int horizontal_resolution=30;//水平
     int vertical_resolution=30;//垂直
     List<Vector3> vertices= new List<Vector3>();
