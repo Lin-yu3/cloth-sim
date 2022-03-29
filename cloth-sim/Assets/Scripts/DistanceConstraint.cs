@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class DistanceConstraint
 {
-    //from https://github.com/yuki-koyama/elasty/blob/692a41953c16243a0d75374d2218176b9b238c86/include/elasty/constraint.hpp
-    //from https://github.com/yuki-koyama/elasty/blob/90765bbc9e9a143744da2b0c862a3078d01ac401/src/constraint.cpp
+    //from https://github.com/yuki-koyama/elasty/blob/master/include/elasty/constraint.hpp
+    //from https://github.com/yuki-koyama/elasty/blob/master/src/constraint.cpp
     float m_d;
     float[] m_inv_M;
     public float m_lagrange_multiplier;
