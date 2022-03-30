@@ -155,9 +155,7 @@ public class cloth_hit_sphere : MonoBehaviour
         }
         print("distconstraints.Count: "+distconstraints.Count);
         //判斷三角形每條邊與幾個三角形共用
-        
     }
-
     void generateCollisionConstraints()
     {
         if(MOVING_SPHERE_COLLISION==false)
