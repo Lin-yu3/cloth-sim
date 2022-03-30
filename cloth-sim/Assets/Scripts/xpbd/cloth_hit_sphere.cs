@@ -17,14 +17,12 @@ public class cloth_hit_sphere : MonoBehaviour
     public Condition condition;
     List<Vector3> vertices=new List<Vector3>();
     Vector3[] myVertices=new Vector3[976];
-    Vector3[] myVertices2=new Vector3[976];
     Particle[] ball=new Particle[976];
     List<int> triangles=new List<int>();
     int[] myTriangles=new int[5490];
-    int[] myTriangles2=new int[5490];
     List<Vector2> uvs= new List<Vector2>();
-    Vector2[] myUV;
-    Vector2[] myUV2;
+    Vector2[] myUV=new Vector2[976];
+    Vector3[] normals=new Vector3[976];
     List<DistanceConstraint> distconstraints = new List<DistanceConstraint>();
     List<FixedPointConstraint> fixconstraints = new List<FixedPointConstraint>();
     List<EnvironmentalCollisionConstraint> collconstraints = new List<EnvironmentalCollisionConstraint>();
@@ -36,6 +34,8 @@ public class cloth_hit_sphere : MonoBehaviour
         genVertices();
         genTriangles();
         DrawMeshSetConstraint();
+        //DrawDoubleMesh();
+        
         if(MOVING_SPHERE_COLLISION==false){
             sphere=Instantiate(myPrefab, new Vector3(0,0.5f,0), Quaternion.identity);
         }
@@ -102,6 +102,46 @@ public class cloth_hit_sphere : MonoBehaviour
             collconstraints.Clear();
         }
     }
+    void DrawDoubleMesh()
+    {
+        gameObject.AddComponent<MeshFilter>();
+        gameObject.AddComponent<MeshRenderer>();
+        gameObject.GetComponent<MeshRenderer>().material = material;
+        mesh = GetComponent<MeshFilter>().mesh;
+        mesh.Clear();
+        //設置正反面頂點
+        var szV = myVertices.Length;
+        var newVerts = new Vector3[szV*2];
+        var newUv = new Vector2[szV*2];
+        var newNorms = new Vector3[szV*2];
+        for (var j=0; j< szV; j++){
+            // duplicate vertices and uvs:
+            newVerts[j] = newVerts[j+szV] = myVertices[j];
+            newUv[j] = newUv[j+szV] = myUV[j];
+            // copy the original normals...
+            newNorms[j] = normals[j];
+            // and revert the new ones
+            newNorms[j+szV] = -normals[j];
+        }
+        var szT = myTriangles.Length;
+        var newTris = new int[szT*2]; // double the triangles
+        for (var i=0; i< szT; i+=3){
+            // copy the original triangle
+            newTris[i+0] = myTriangles[i+0];
+            newTris[i+1] = myTriangles[i+1];
+            newTris[i+2] = myTriangles[i+2];
+            // save the new reversed triangle
+            var j = i+szT; 
+            newTris[j+0] = myTriangles[i+0]+szV;
+            newTris[j+2] = myTriangles[i+1]+szV;
+            newTris[j+1] = myTriangles[i+2]+szV;
+        }
+        
+        mesh.vertices = newVerts;
+        mesh.uv = newUv;
+        mesh.normals = newNorms;
+        mesh.triangles = newTris; // assign triangles last!
+    }
     void DrawMeshSetConstraint()
     {
         gameObject.AddComponent<MeshFilter>();
@@ -119,6 +159,8 @@ public class cloth_hit_sphere : MonoBehaviour
         //設置uv
         myUV=uvs.ToArray();
         mesh.uv=myUV;
+        for(int i=0;i<myUV.Length;i++){ normals[i]=Vector3.up;}
+        mesh.normals = normals; 
         //加些小小的擾動
         for(int i=0;i<myVertices.Length;i++)
         {
@@ -259,7 +301,7 @@ public class cloth_hit_sphere : MonoBehaviour
                     uvs.Add(new Vector2(1, v));
                 }
             }
-        }
+        }   
     }
     void genTriangles()
     {
