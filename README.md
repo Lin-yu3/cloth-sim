@@ -55,3 +55,4 @@ use PBD or XPBD to simulate cloth
 18. 增加兩種collision: (1) SPHERE_COLLISION (2)MOVING_SPHERE_COLLISION 
 19. TODO(3/24)：正面、反面，可以在 mesh 推2次(順時針、逆時針) Download double sided shader（Unity package )就能輕鬆繪製雙面布料, 但效能使用多寡還待查證, 老師說可使用
 20. TODO(3/31): 小紅筆電安裝Linux跑yuki程式與我們的交叉比對, 看看collision constraint問題出在哪
+21. 論文(PBD)內提到繪製mesh後須先判斷三角形每邊邊長最多與兩個三角形共用
