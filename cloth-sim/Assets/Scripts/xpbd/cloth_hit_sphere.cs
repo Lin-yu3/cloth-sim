@@ -109,6 +109,18 @@ public class cloth_hit_sphere : MonoBehaviour
         gameObject.GetComponent<MeshRenderer>().material = material;
         mesh = GetComponent<MeshFilter>().mesh;
         mesh.Clear();
+        //設置頂點
+        for(int i=0;i<vertices.Count;i++){ vertices[i]+=new Vector3(0,2,1);}
+        myVertices=vertices.ToArray();
+        mesh.vertices=myVertices;
+        //設置三角形頂點順序，順時針設置
+        myTriangles=triangles.ToArray();
+        mesh.triangles=myTriangles;
+        //設置uv
+        myUV=uvs.ToArray();
+        mesh.uv=myUV;
+        for(int i=0;i<myUV.Length;i++){ normals[i]=Vector3.up;}
+        mesh.normals = normals; 
         //設置正反面頂點
         var szV = myVertices.Length;
         var newVerts = new Vector3[szV*2];
@@ -159,8 +171,6 @@ public class cloth_hit_sphere : MonoBehaviour
         //設置uv
         myUV=uvs.ToArray();
         mesh.uv=myUV;
-        for(int i=0;i<myUV.Length;i++){ normals[i]=Vector3.up;}
-        mesh.normals = normals; 
         //加些小小的擾動
         for(int i=0;i<myVertices.Length;i++)
         {
@@ -197,6 +207,7 @@ public class cloth_hit_sphere : MonoBehaviour
         }
         print("distconstraints.Count: "+distconstraints.Count);
         //判斷三角形每條邊與幾個三角形共用
+        
     }
     void generateCollisionConstraints()
     {
