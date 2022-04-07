@@ -53,6 +53,7 @@ use PBD or XPBD to simulate cloth
 16. 目前狀況: myball[i] 沒有初始化,因為宣告了2個,就錯了。
 17. (3/14) Debug 3個錯誤: (1) myball[i].w = 1.0f /2626, (2) fixconstraints.Count 竟然是0, (3) my_delta_physics_time 乘上 myball[i].f 的那行,太小了, 沒有效果。
 18. 增加兩種collision: (1) SPHERE_COLLISION (2)MOVING_SPHERE_COLLISION 
-19. TODO(3/24)：正面、反面，可以在 mesh 推2次(順時針、逆時針) Download double sided shader（Unity package )就能輕鬆繪製雙面布料, 但效能使用多寡還待查證, 老師說可使用
+19. TODO(3/24): 正面、反面，可以在 mesh 推2次(順時針、逆時針) Download double sided shader（Unity package )就能輕鬆繪製雙面布料, 但效能使用多寡還待查證, 老師說可使用
 20. TODO(3/31): 小紅筆電安裝Linux跑yuki程式與我們的交叉比對, 看看collision constraint問題出在哪
 21. 論文(PBD)內提到繪製mesh後須先判斷三角形每邊邊長最多與兩個三角形共用
+22. TODO(4/7): C std::map 在 C# 可用 Dictionary 來取代 
