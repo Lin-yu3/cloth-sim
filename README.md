@@ -59,4 +59,4 @@ use PBD or XPBD to simulate cloth
 22. TODO(4/7): C std::map 在 C# 可用 Dictionary 來取代
 23. 修改我的畢業論文
 24. 跟著老師截圖的步驟, 成功將elasty裝到小紅筆電, 建立Makefile執行範例時使用
-25. TODO(4/11): 讀論文[Simulating wind effects on cloth and hair in Disney’s Frozen](https://doi.org/10.1145/2614106.2614120), 並實作
+25. TODO(4/11): 讀論文並實作[Simulating wind effects on cloth and hair in Disney’s Frozen](https://media.disneyanimation.com/uploads/production/publication_asset/115/asset/cloth_hair_wind.pdf)
