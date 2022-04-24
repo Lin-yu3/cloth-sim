@@ -10,19 +10,17 @@ public class cloth_hit_sphere : MonoBehaviour
     
     public Material material;
     public GameObject myPrefab;
-    public int horizontal_resolution=30;//水平
-    public int vertical_resolution=30;//垂直
+    public int horizontal_resolution=50;//水平
+    public int vertical_resolution=50;//垂直
     public bool MOVING_SPHERE_COLLISION = false;
-    public enum Condition { Without_Aerodynamics, With_Aerodynamics, Wind, Wind_High_Drag, Wind_High_Lift}
-    public Condition condition;
     List<Vector3> vertices=new List<Vector3>();
-    Vector3[] myVertices=new Vector3[976];
-    Particle[] ball=new Particle[976];
+    Vector3[] myVertices=new Vector3[2626];
+    Particle[] ball=new Particle[2626];
     List<int> triangles=new List<int>();
-    int[] myTriangles=new int[5490];
+    int[] myTriangles=new int[15150];
     List<Vector2> uvs= new List<Vector2>();
-    Vector2[] myUV=new Vector2[976];
-    Vector3[] normals=new Vector3[976];
+    Vector2[] myUV=new Vector2[2626];
+    Vector3[] normals=new Vector3[2626];
     List<DistanceConstraint> distconstraints = new List<DistanceConstraint>();
     List<FixedPointConstraint> fixconstraints = new List<FixedPointConstraint>();
     List<EnvironmentalCollisionConstraint> collconstraints = new List<EnvironmentalCollisionConstraint>();
@@ -37,10 +35,10 @@ public class cloth_hit_sphere : MonoBehaviour
         //DrawDoubleMesh();
         
         if(MOVING_SPHERE_COLLISION==false){
-            sphere=Instantiate(myPrefab, new Vector3(0,0.5f,0), Quaternion.identity);
+            sphere=Instantiate(myPrefab, new Vector3(0,1f,0), Quaternion.identity);
         }
         else{
-            sphere=Instantiate(myPrefab, new Vector3(0,0.5f,3), Quaternion.identity);
+            sphere=Instantiate(myPrefab, new Vector3(0,1f,3), Quaternion.identity);
         }
     }
     void Update()
@@ -102,58 +100,6 @@ public class cloth_hit_sphere : MonoBehaviour
             collconstraints.Clear();
         }
     }
-    void DrawDoubleMesh()
-    {
-        gameObject.AddComponent<MeshFilter>();
-        gameObject.AddComponent<MeshRenderer>();
-        gameObject.GetComponent<MeshRenderer>().material = material;
-        mesh = GetComponent<MeshFilter>().mesh;
-        mesh.Clear();
-        //設置頂點
-        for(int i=0;i<vertices.Count;i++){ vertices[i]+=new Vector3(0,2,1);}
-        myVertices=vertices.ToArray();
-        mesh.vertices=myVertices;
-        //設置三角形頂點順序，順時針設置
-        myTriangles=triangles.ToArray();
-        mesh.triangles=myTriangles;
-        //設置uv
-        myUV=uvs.ToArray();
-        mesh.uv=myUV;
-        for(int i=0;i<myUV.Length;i++){ normals[i]=Vector3.up;}
-        mesh.normals = normals; 
-        //設置正反面頂點
-        var szV = myVertices.Length;
-        var newVerts = new Vector3[szV*2];
-        var newUv = new Vector2[szV*2];
-        var newNorms = new Vector3[szV*2];
-        for (var j=0; j< szV; j++){
-            // duplicate vertices and uvs:
-            newVerts[j] = newVerts[j+szV] = myVertices[j];
-            newUv[j] = newUv[j+szV] = myUV[j];
-            // copy the original normals...
-            newNorms[j] = normals[j];
-            // and revert the new ones
-            newNorms[j+szV] = -normals[j];
-        }
-        var szT = myTriangles.Length;
-        var newTris = new int[szT*2]; // double the triangles
-        for (var i=0; i< szT; i+=3){
-            // copy the original triangle
-            newTris[i+0] = myTriangles[i+0];
-            newTris[i+1] = myTriangles[i+1];
-            newTris[i+2] = myTriangles[i+2];
-            // save the new reversed triangle
-            var j = i+szT; 
-            newTris[j+0] = myTriangles[i+0]+szV;
-            newTris[j+2] = myTriangles[i+1]+szV;
-            newTris[j+1] = myTriangles[i+2]+szV;
-        }
-        
-        mesh.vertices = newVerts;
-        mesh.uv = newUv;
-        mesh.normals = newNorms;
-        mesh.triangles = newTris; // assign triangles last!
-    }
     void DrawMeshSetConstraint()
     {
         gameObject.AddComponent<MeshFilter>();
@@ -207,7 +153,11 @@ public class cloth_hit_sphere : MonoBehaviour
         }
         print("distconstraints.Count: "+distconstraints.Count);
         //判斷三角形每條邊與幾個三角形共用
+        //List<TriangleNeighbors.Vertex> vertex=new List<TriangleNeighbors.Vertex>();
+        // TriangleNeighbors.verticesLookup;
+        // TriangleNeighbors.edges;
         
+        //TriangleNeighbors.CreateEdgeList()
     }
     void generateCollisionConstraints()
     {
@@ -282,7 +232,7 @@ public class cloth_hit_sphere : MonoBehaviour
 
             float coeff = 0.5f * rho * area;
 
-            // Note: This wind force model was proposed by [Wilson+14]
+            // Note: This wind force model was proposed by [12]
             Vector3 f = -coeff * ((drag_coeff - lift_coeff) * Vector3.Dot(v_rel,n) * v_rel + lift_coeff * v_rel_squared * n);
             ball[myTriangles[i * 3 + 0]].f += (m_0 / m_sum) * f;
             ball[myTriangles[i * 3 + 1]].f += (m_1 / m_sum) * f;
