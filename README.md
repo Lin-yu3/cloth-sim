@@ -56,4 +56,7 @@ use PBD or XPBD to simulate cloth
 19. TODO(3/24): 正面、反面，可以在 mesh 推2次(順時針、逆時針) Download double sided shader（Unity package )就能輕鬆繪製雙面布料, 但效能使用多寡還待查證, 老師說可使用
 20. TODO(3/31): 小紅筆電安裝Linux跑yuki程式與我們的交叉比對, 看看collision constraint問題出在哪
 21. 論文(PBD)內提到繪製mesh後須先判斷三角形每邊邊長最多與兩個三角形共用
-22. TODO(4/7): C std::map 在 C# 可用 Dictionary 來取代 
+22. TODO(4/7): C std::map 在 C# 可用 Dictionary 來取代
+23. 修改我的畢業論文
+24. 跟著老師截圖的步驟, 成功將elasty裝到小紅筆電, 建立Makefile執行範例時使用
+25. TODO(4/11): 讀論文並實作[Simulating wind effects on cloth and hair in Disney’s Frozen](https://media.disneyanimation.com/uploads/production/publication_asset/115/asset/cloth_hair_wind.pdf)
