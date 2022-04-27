@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using System;
 public class cloth_hit_sphere : MonoBehaviour
 {  
     //from https://github.com/yuki-koyama/elasty/blob/master/examples/cloth-alembic/main.cpp
@@ -122,7 +122,9 @@ public class cloth_hit_sphere : MonoBehaviour
         {
             ball[i] = new Particle(myVertices[i]);
             myVertices[i] = ball[i].x;
-            ball[i].v=new Vector3(Random.Range(-0.001f,+0.001f),Random.Range(-0.001f,+0.001f),Random.Range(-0.001f,+0.001f));
+            ball[i].v=new Vector3(UnityEngine.Random.Range(-0.001f,+0.001f),
+                                  UnityEngine.Random.Range(-0.001f,+0.001f),
+                                  UnityEngine.Random.Range(-0.001f,+0.001f) );
         }
         //釘住右上角,左上角
         float range_radius = 0.1f;
@@ -153,11 +155,69 @@ public class cloth_hit_sphere : MonoBehaviour
         }
         print("distconstraints.Count: "+distconstraints.Count);
         //判斷三角形每條邊與幾個三角形共用
-        //List<TriangleNeighbors.Vertex> vertex=new List<TriangleNeighbors.Vertex>();
-        // TriangleNeighbors.verticesLookup;
-        // TriangleNeighbors.edges;
-        
-        //TriangleNeighbors.CreateEdgeList()
+        Dictionary < Tuple<int, int>, List<int>> edges_and_triangles = new Dictionary < Tuple<int, int>, List<int> > ();
+        for (int i = 0; i < myTriangles.Length / 3; ++i)
+        {
+            int index_0 = myTriangles[i * 3 + 0];
+            int index_1 = myTriangles[i * 3 + 1];
+            int index_2 = myTriangles[i * 3 + 2];
+
+            Tuple<int, int> e_01 = new Tuple<int, int>(index_0, index_1);
+            Tuple<int, int> e_02 = new Tuple<int, int>(index_0, index_2);
+            Tuple<int, int> e_12 = new Tuple<int, int>(index_1, index_2);
+
+            void register_edge(Tuple<int, int> edge)
+            {
+                for(int i=0;i<myTriangles.Length/3;i++)
+                {
+                    if(i>=0 && i<myTriangles.Length/3)
+                    {
+                        //edges_and_triangles[edge] = {i};
+                    }
+                    else
+                    {
+                        //edges_and_triangles[edge].Add(i);
+                    }    
+                }
+                
+            }
+            register_edge(e_01);
+            register_edge(e_02);
+            register_edge(e_12);
+        }
+        foreach (KeyValuePair<Tuple<int, int>, List<int>> key_value in edges_and_triangles)
+        {
+            Tuple<int,int> edge = key_value.Key;
+            List<int> triangles = key_value.Value;
+
+            // Boundary
+            if (triangles.Count == 1)
+            {
+                continue;
+            }
+
+            // int obtain_another_vertex(int triangle, Tuple<int,int> edge)
+            // {
+            //     int vertex_0 = myTriangles[3 * triangle + 0];
+            //     int vertex_1 = myTriangles[3 * triangle + 1];
+            //     int vertex_2 = myTriangles[3 * triangle + 2];
+
+            //     if (vertex_0 != edge.Item1 && vertex_0 != edge.Item2)
+            //     {
+            //         return vertex_0;
+            //     }
+            //     else if (vertex_1 != edge.Item1 && vertex_1 != edge.Item2)
+            //     {
+            //         return vertex_1;
+            //     }
+            //     else if(vertex_2 != edge.Item1 && vertex_2 != edge.Item2)
+            //     {
+            //         return vertex_2;
+            //     }
+            // }
+            // int another_vertex_0 = obtain_another_vertex(triangles[0], edge);
+            // int another_vertex_1 = obtain_another_vertex(triangles[1], edge);
+        }
     }
     void generateCollisionConstraints()
     {
