@@ -10,20 +10,22 @@ public class cloth_hit_sphere : MonoBehaviour
     
     public Material material;
     public GameObject myPrefab;
-    public int horizontal_resolution=50;//水平
-    public int vertical_resolution=50;//垂直
+    public int horizontal_resolution=30;//水平
+    public int vertical_resolution=30;//垂直
     public bool MOVING_SPHERE_COLLISION = false;
     List<Vector3> vertices=new List<Vector3>();
-    Vector3[] myVertices=new Vector3[2626];
-    Particle[] ball=new Particle[2626];
+    Vector3[] myVertices=new Vector3[976];
+    Particle[] ball=new Particle[976];
     List<int> triangles=new List<int>();
-    int[] myTriangles=new int[15150];
+    int[] myTriangles=new int[5490];
     List<Vector2> uvs= new List<Vector2>();
-    Vector2[] myUV=new Vector2[2626];
-    Vector3[] normals=new Vector3[2626];
+    Vector2[] myUV=new Vector2[976];
+    Vector3[] normals=new Vector3[976];
     List<DistanceConstraint> distconstraints = new List<DistanceConstraint>();
     List<FixedPointConstraint> fixconstraints = new List<FixedPointConstraint>();
     List<EnvironmentalCollisionConstraint> collconstraints = new List<EnvironmentalCollisionConstraint>();
+    List<IsometricBendingConstraint> isoconstraints = new List<IsometricBendingConstraint>();
+    List<BendingConstraint> bendconstraints=new List<BendingConstraint>();
     GameObject sphere;
     Mesh mesh;
     
@@ -32,7 +34,6 @@ public class cloth_hit_sphere : MonoBehaviour
         genVertices();
         genTriangles();
         DrawMeshSetConstraint();
-        //DrawDoubleMesh();
         
         if(MOVING_SPHERE_COLLISION==false){
             sphere=Instantiate(myPrefab, new Vector3(0,1f,0), Quaternion.identity);
@@ -168,18 +169,17 @@ public class cloth_hit_sphere : MonoBehaviour
 
             void register_edge(Tuple<int, int> edge)
             {
-                for(int i=0;i<myTriangles.Length/3;i++)
+                //找不到就加新的
+                if(!edges_and_triangles.ContainsKey(edge))
                 {
-                    if(i>=0 && i<myTriangles.Length/3)
-                    {
-                        //edges_and_triangles[edge] = {i};
-                    }
-                    else
-                    {
-                        //edges_and_triangles[edge].Add(i);
-                    }    
+                    
+                    edges_and_triangles[edge]=new List<int>();
+                    edges_and_triangles[edge].Add(i);
                 }
-                
+                else 
+                {
+                    edges_and_triangles[edge].Add(i);
+                }  
             }
             register_edge(e_01);
             register_edge(e_02);
@@ -196,28 +196,102 @@ public class cloth_hit_sphere : MonoBehaviour
                 continue;
             }
 
-            // int obtain_another_vertex(int triangle, Tuple<int,int> edge)
-            // {
-            //     int vertex_0 = myTriangles[3 * triangle + 0];
-            //     int vertex_1 = myTriangles[3 * triangle + 1];
-            //     int vertex_2 = myTriangles[3 * triangle + 2];
+            int obtain_another_vertex(int triangle, Tuple<int,int> edge)
+            {
+                int vertex_0 = myTriangles[3 * triangle + 0];
+                int vertex_1 = myTriangles[3 * triangle + 1];
+                int vertex_2 = myTriangles[3 * triangle + 2];
 
-            //     if (vertex_0 != edge.Item1 && vertex_0 != edge.Item2)
-            //     {
-            //         return vertex_0;
-            //     }
-            //     else if (vertex_1 != edge.Item1 && vertex_1 != edge.Item2)
-            //     {
-            //         return vertex_1;
-            //     }
-            //     else if(vertex_2 != edge.Item1 && vertex_2 != edge.Item2)
-            //     {
-            //         return vertex_2;
-            //     }
-            // }
-            // int another_vertex_0 = obtain_another_vertex(triangles[0], edge);
-            // int another_vertex_1 = obtain_another_vertex(triangles[1], edge);
+                if (vertex_0 != edge.Item1 && vertex_0 != edge.Item2)
+                {
+                    return vertex_0;
+                }
+                else if (vertex_1 != edge.Item1 && vertex_1 != edge.Item2)
+                {
+                    return vertex_1;
+                }
+                else 
+                {
+                    return vertex_2;
+                }
+            }
+            int another_vertex_0 = obtain_another_vertex(triangles[0], edge);
+            int another_vertex_1 = obtain_another_vertex(triangles[1], edge);
+            
+            string out_of_plane_strategy = "IsometricBending";
+            switch (out_of_plane_strategy)
+            {
+                case "IsometricBending" :
+                    Particle iso_p_0 = ball[edge.Item1];
+                    Particle iso_p_1 = ball[edge.Item2];
+                    Particle iso_p_2 = ball[another_vertex_0];
+                    Particle iso_p_3 = ball[another_vertex_1];
+
+                    isoconstraints.Add(new IsometricBendingConstraint(iso_p_0, iso_p_1, iso_p_2, iso_p_3));
+                    break;
+
+                case "Bending":
+
+                    Particle bend_p_0 = ball[edge.Item1];
+                    Particle bend_p_1 = ball[edge.Item2];
+                    Particle bend_p_2 = ball[another_vertex_0];
+                    Particle bend_p_3 = ball[another_vertex_1];
+
+                    Vector3 x_0 = bend_p_0.x;
+                    Vector3 x_1 = bend_p_1.x;
+                    Vector3 x_2 = bend_p_2.x;
+                    Vector3 x_3 = bend_p_3.x;
+
+                    Vector3 p_10 = x_1 - x_0;
+                    Vector3 p_20 = x_2 - x_0;
+                    Vector3 p_30 = x_3 - x_0;
+
+                    Vector3 n_0 = Vector3.Cross(p_10,p_20).normalized;
+                    Vector3 n_1 = Vector3.Cross(p_10,p_30).normalized;
+
+                    // Typical value is 0.0 or pi
+                    float dihedral_angle = Mathf.Acos(Mathf.Clamp(Vector3.Dot(n_0,n_1), -1.0f, 1.0f));
+
+                    if (Single.IsNaN(dihedral_angle)) print("dihedral_angle is NaN !!!!!");
+                    
+                    bendconstraints.Add(new BendingConstraint(bend_p_0, bend_p_1, bend_p_2, bend_p_3, dihedral_angle));
+
+                    break;
+
+                case "Cross":
+                    Particle dist_p_2 = ball[another_vertex_0];
+                    Particle dist_p_3 = ball[another_vertex_1];
+
+                    Vector3 dist_x_2 = dist_p_2.x;
+                    Vector3 dist_x_3 = dist_p_3.x;
+
+                    distconstraints.Add(new DistanceConstraint(dist_p_2, dist_p_3, (dist_x_2 - dist_x_3).magnitude));
+                    break;
+            }
         }
+        calculateAreas(); 
+    }
+    void calculateAreas()
+    {
+        int[,] m_triangle_list=new int[myTriangles.Length / 3,3];
+        for (int i = 0; i < myTriangles.Length / 3; ++i)
+        {
+            m_triangle_list[i, 0] = myTriangles[i * 3 + 0];
+            m_triangle_list[i, 1] = myTriangles[i * 3 + 1];
+            m_triangle_list[i, 2] = myTriangles[i * 3 + 2];
+        }
+        float[] m_area_list=new float[myTriangles.Length/3];
+
+        for (int i = 0; i < m_triangle_list.GetLength(0); ++i)
+        {
+            Vector3 x_0 = ball[m_triangle_list[i, 0]].x;
+            Vector3 x_1 = ball[m_triangle_list[i, 1]].x;
+            Vector3 x_2 = ball[m_triangle_list[i, 2]].x;
+
+            float area = 0.5f *Vector3.Cross((x_1 - x_0),(x_2 - x_0)).magnitude;
+
+            m_area_list[i]=area;
+        } 
     }
     void generateCollisionConstraints()
     {
