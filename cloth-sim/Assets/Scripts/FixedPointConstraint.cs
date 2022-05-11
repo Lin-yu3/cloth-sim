@@ -59,7 +59,7 @@ public class FixedPointConstraint
                 }
                 // Calculate time-scaled compliance
                 float m_compliance=0;// main.cpp 第66,71行
-                float m_delta_time=1/3f;// 公式:delta_frame_time/substep
+                float m_delta_time=1/60f;// 公式:delta_frame_time/substep
                 float alpha_tilde = m_compliance / (m_delta_time * m_delta_time);
 
                 // Calculate \Delta lagrange multiplier

@@ -39,7 +39,7 @@ public class cloth_hit_sphere : MonoBehaviour
             sphere=Instantiate(myPrefab, new Vector3(0,1f,0), Quaternion.identity);
         }
         else{
-            sphere=Instantiate(myPrefab, new Vector3(0,1f,3), Quaternion.identity);
+            sphere=Instantiate(myPrefab, new Vector3(0,1f,-3), Quaternion.identity);
         }
     }
     void Update()
@@ -70,6 +70,9 @@ public class cloth_hit_sphere : MonoBehaviour
             foreach(EnvironmentalCollisionConstraint constraint in collconstraints){
                 constraint.m_lagrange_multiplier=0;
             }
+            foreach(IsometricBendingConstraint constraint in isoconstraints){
+                constraint.m_lagrange_multiplier=0;
+            }
             generateCollisionConstraints();
             // Project Particles
             int solverIterators=10;
@@ -80,8 +83,10 @@ public class cloth_hit_sphere : MonoBehaviour
                 foreach(DistanceConstraint constraint in distconstraints){
                     constraint.projectParticles();
                 }
-                foreach(FixedPointConstraint constraint in fixconstraints)
-                {
+                foreach(FixedPointConstraint constraint in fixconstraints){
+                    constraint.projectParticles();
+                }
+                foreach(IsometricBendingConstraint constraint in isoconstraints){
                     constraint.projectParticles();
                 }  
             }

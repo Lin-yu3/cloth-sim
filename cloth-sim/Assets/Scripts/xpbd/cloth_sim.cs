@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class cloth_sim : MonoBehaviour
 {
-    int horizontal_resolution=30;//水平
-    int vertical_resolution=30;//垂直
-    GameObject[] sphere=new GameObject[976];
+    int horizontal_resolution=50;//水平
+    int vertical_resolution=50;//垂直
+    GameObject[] sphere=new GameObject[2626];
     List<Particle> ball=new List<Particle>();
-    Particle[] myball=new Particle[976];
+    Particle[] myball=new Particle[2626];
     List<int> triangles=new List<int>();
-    int[] myTriangles=new int[5490];
+    int[] myTriangles=new int[15150];
     List<DistanceConstraint> distconstraints = new List<DistanceConstraint>();
     List<FixedPointConstraint> fixconstraints = new List<FixedPointConstraint>();
 
