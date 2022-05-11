@@ -103,7 +103,7 @@ public class IsometricBendingConstraint
                     s2+=grad_C[i]*m_inv_M[i]*grad_C[i];
                 }
                 // Calculate time-scaled compliance
-                float m_compliance=50000f;
+                float m_compliance=50000f;//5乘10的4次方
                 float m_delta_time=1/3f;// 公式:delta_frame_time/substep
                 float alpha_tilde = m_compliance / (m_delta_time * m_delta_time);
 

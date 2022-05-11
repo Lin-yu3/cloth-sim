@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using cloth_sim_object;
 public class cloth_hit_sphere : MonoBehaviour
 {  
     //from https://github.com/yuki-koyama/elasty/blob/master/examples/cloth-alembic/main.cpp
@@ -10,8 +11,6 @@ public class cloth_hit_sphere : MonoBehaviour
     
     public Material material;
     public GameObject myPrefab;
-    public int horizontal_resolution=30;//水平
-    public int vertical_resolution=30;//垂直
     public bool MOVING_SPHERE_COLLISION = false;
     List<Vector3> vertices=new List<Vector3>();
     Vector3[] myVertices=new Vector3[976];
@@ -31,8 +30,7 @@ public class cloth_hit_sphere : MonoBehaviour
     
     void Start()
     {
-        genVertices();
-        genTriangles();
+        generateClothMeshObjData(2,2,30,30);
         DrawMeshSetConstraint();
         
         if(MOVING_SPHERE_COLLISION==false){
@@ -378,7 +376,7 @@ public class cloth_hit_sphere : MonoBehaviour
             ball[myTriangles[i * 3 + 2]].f += (m_2 / m_sum) * f;
         }
     } 
-    void genVertices()
+    void generateClothMeshObjData(int width, int height, int horizontal_resolution, int vertical_resolution)
     {
         // Vertices
         for (int v_index = 0; v_index <= vertical_resolution; ++v_index)
@@ -401,10 +399,7 @@ public class cloth_hit_sphere : MonoBehaviour
                     uvs.Add(new Vector2(1, v));
                 }
             }
-        }   
-    }
-    void genTriangles()
-    {
+        }
         // Triangles
         for (int v_index = 0; v_index < vertical_resolution; ++v_index)
         {
