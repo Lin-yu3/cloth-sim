@@ -2,17 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using cloth_sim_object;
-public class cloth_hit_sphere : MonoBehaviour
-{  
+public class pbd07_mesh_cloth : MonoBehaviour
+{
+    //demo example pbd07_mesh_cloth: 976 balls, 30*31 + 31*30 constraints, add 8 FixedPointConstrint
     //from https://github.com/yuki-koyama/elasty/blob/master/examples/cloth-alembic/main.cpp
     //from https://github.com/yuki-koyama/elasty/blob/master/src/cloth-sim-object.cpp
     //from https://github.com/yuki-koyama/elasty/blob/master/src/utils.cpp
-    
     public Material material;
-    public GameObject myPrefab;
-    public bool MOVING_SPHERE_COLLISION = false;
-    public static int PBD_OR_XPBD=2;
+    public static int PBD_OR_XPBD=1;
+    public int solverIterators=2;
     List<Vector3> vertices=new List<Vector3>();
     Vector3[] myVertices=new Vector3[976];
     Particle[] ball=new Particle[976];
@@ -33,73 +31,46 @@ public class cloth_hit_sphere : MonoBehaviour
     {
         generateClothMeshObjData(2,2,30,30);
         DrawMeshSetConstraint();
-        
-        if(MOVING_SPHERE_COLLISION==false){
-            sphere=Instantiate(myPrefab, new Vector3(0,1f,0), Quaternion.identity);
-        }
-        else{
-            sphere=Instantiate(myPrefab, new Vector3(0,1f,-3), Quaternion.identity);
-        }
     }
+    // Update is called once per frame
     void Update()
     {
-        for(int substep=0;substep<5;substep++)
+        // from:https://github.com/yuki-koyama/elasty/blob/master/src/engine.cpp
+        float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
+        //Apply external forces
+        for(int i=0;i<ball.Length;i++)
         {
-            float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
-            //Apply external forces
-            for(int i=0;i<ball.Length;i++)
-            {
-                Vector3 g=new Vector3(0,-9.8f,0);
-                ball[i].f=ball[i].m*g;
-            }
-            //applyAerodynamicForces
-            applyAerodynamicForces(new Vector3(0,0,0) , 0.1f, 0.06f);
-            for(int i=0;i<ball.Length;i++)
-            {//f=ma, a=f*1/m = f*w
-                ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
-                ball[i].p = ball[i].x + m_delta_physics_time * ball[i].v;
-            }
-            // Reset Lagrange multipliers (only necessary for XPBD)
+            Vector3 g=new Vector3(0,-9.8f,0);
+            ball[i].f=ball[i].m*g;
+        }
+        //applyAerodynamicForces
+        applyAerodynamicForces(new Vector3(0,0,0) , 0.1f, 0.06f);
+        for(int i=0;i<ball.Length;i++)
+        {//f=ma, a=f*1/m = f*w
+            ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
+            ball[i].p = ball[i].x + m_delta_physics_time * ball[i].v;
+        }
+        // Project Particles
+        for (int i = 0; i < solverIterators; i++){
             foreach(DistanceConstraint constraint in distconstraints){
-                constraint.m_lagrange_multiplier=0;
+                constraint.projectParticles();
             }
-            foreach(FixedPointConstraint constraint in fixconstraints){
-                constraint.m_lagrange_multiplier=0;
-            }
-            foreach(IsometricBendingConstraint constraint in isoconstraints){
-                constraint.m_lagrange_multiplier=0;
-            }
-            generateCollisionConstraints();
-            // Project Particles
-            int solverIterators=10;
-            for (int i = 0; i < solverIterators; i++){
-                foreach(DistanceConstraint constraint in distconstraints){
-                    constraint.projectParticles();
-                }
-                foreach(FixedPointConstraint constraint in fixconstraints){
-                    constraint.projectParticles();
-                }
-                foreach(IsometricBendingConstraint constraint in isoconstraints){
-                    constraint.projectParticles();
-                }
-                foreach(EnvironmentalCollisionConstraint constraint in collconstraints){
-                    constraint.projectParticles();
-                }  
-            }
-            //更新 GameObject localPosition & Particles
-            for(int i=0;i<ball.Length;i++)
+            foreach(FixedPointConstraint constraint in fixconstraints)
             {
-                //更新 GameObject's localPosition
-                myVertices[i] = ball[i].p;
-                mesh.vertices=myVertices;
-                //更新 particle
-                ball[i].v = (ball[i].p- ball[i].x) * (1.0f/m_delta_physics_time);
-                ball[i].x = ball[i].p;
-                //Update velocities
-                ball[i].v*=0.9999f;
-            }
-            //Clear EnvironmentalCollisionConstraints
-            collconstraints.Clear();
+                constraint.projectParticles();
+            }  
+        }
+        //更新 GameObject localPosition & Particles
+        for(int i=0;i<ball.Length;i++)
+        {
+            //更新 GameObject's localPosition
+            myVertices[i] = ball[i].p;
+            mesh.vertices=myVertices;
+            //更新 particle
+            ball[i].v = (ball[i].p- ball[i].x) * (1.0f/m_delta_physics_time);
+            ball[i].x = ball[i].p;
+            //Update velocities
+            ball[i].v*=0.9999f;
         }
     }
     void DrawMeshSetConstraint()
@@ -124,9 +95,7 @@ public class cloth_hit_sphere : MonoBehaviour
         {
             ball[i] = new Particle(myVertices[i]);
             myVertices[i] = ball[i].x;
-            ball[i].v=new Vector3(UnityEngine.Random.Range(-0.001f,+0.001f),
-                                  UnityEngine.Random.Range(-0.001f,+0.001f),
-                                  UnityEngine.Random.Range(-0.001f,+0.001f) );
+            ball[i].v=new Vector3(UnityEngine.Random.Range(-0.001f,+0.001f),UnityEngine.Random.Range(-0.001f,+0.001f),UnityEngine.Random.Range(-0.001f,+0.001f) );
         }
         //釘住右上角,左上角
         float range_radius = 0.1f;
@@ -270,7 +239,7 @@ public class cloth_hit_sphere : MonoBehaviour
                     break;
             }
         }
-        calculateAreas(); 
+        calculateAreas();
     }
     void calculateAreas()
     {
@@ -292,44 +261,6 @@ public class cloth_hit_sphere : MonoBehaviour
             float area = 0.5f *Vector3.Cross((x_1 - x_0),(x_2 - x_0)).magnitude;
 
             m_area_list[i]=area;
-        } 
-    }
-    void generateCollisionConstraints()
-    {
-        if(MOVING_SPHERE_COLLISION==false)
-        {
-            Vector3 center= sphere.transform.localPosition;
-            float tolerance=0.05f;
-            float radius=0.5f+0.02f;//大圓半徑+小圓半徑?
-            for(int i=0; i<ball.Length; i++)
-            {
-                Vector3 direction = ball[i].x - center;
-                if (direction.magnitude< radius + tolerance)
-                {
-                    Vector3 normal = direction.normalized;
-                    float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius;
-                    collconstraints.Add( new EnvironmentalCollisionConstraint(ball[i], normal, distance));
-                }
-            }
-        }
-        else if(MOVING_SPHERE_COLLISION==true)
-        {
-            // Collision with a moving sphere
-            sphere.transform.localPosition+=new Vector3(0,0,-0.03f);
-            float posZ= sphere.transform.position.z;
-            Vector3 center=new Vector3(0, 0.5f, posZ);
-            float tolerance= 0.05f;
-            float radius=0.5f+0.02f;//大圓半徑+小圓半徑?
-            for(int i=0; i<ball.Length; i++)
-            {
-                Vector3 direction = ball[i].x - center;
-                if (direction.magnitude< radius + tolerance)
-                {
-                    Vector3 normal = direction.normalized;
-                    float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius;
-                    collconstraints.Add( new EnvironmentalCollisionConstraint(ball[i], normal, distance));
-                }
-            }
         } 
     }
     void applyAerodynamicForces(Vector3 global_velocity, float drag_coeff, float lift_coeff)
@@ -373,7 +304,7 @@ public class cloth_hit_sphere : MonoBehaviour
             ball[myTriangles[i * 3 + 1]].f += (m_1 / m_sum) * f;
             ball[myTriangles[i * 3 + 2]].f += (m_2 / m_sum) * f;
         }
-    } 
+    }
     void generateClothMeshObjData(int width, int height, int horizontal_resolution, int vertical_resolution)
     {
         // Vertices
@@ -452,6 +383,6 @@ public class cloth_hit_sphere : MonoBehaviour
                 }
             }
         }
-    }
-}
+    } 
 
+}

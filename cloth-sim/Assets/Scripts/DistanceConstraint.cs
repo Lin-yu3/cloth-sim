@@ -35,63 +35,59 @@ public class DistanceConstraint
         float[] grad_C=calculateGrad();
         if(norm(grad_C)<1e-12)return;
         // PBD:1, XPBD:2
-        int PBD_OR_XPBD=2;
-        switch (PBD_OR_XPBD)
-        {
-            //PBD
-            case 1:
-                //計算s
-                float s=0;
-                for(int i=0;i<6;i++)
-                {
-                    //s+=grad_C[i]*1/6f*grad_C[i];
-                    s+=grad_C[i]*m_inv_M[i]*grad_C[i];
-                }
-                s=-C/s;
-                //計算 delta_x
-                float m_stiffness=1f;
-                Vector3[] delta_x=new Vector3[2];
-                delta_x[0]=new Vector3(grad_C[0]*m_inv_M[0],grad_C[1]*m_inv_M[1],grad_C[2]*m_inv_M[2]);
-                // delta_x[0]*=m_stiffness*s*1/6f;
-                delta_x[0]*=m_stiffness*s;
-                delta_x[1]=new Vector3(grad_C[3]*m_inv_M[3],grad_C[4]*m_inv_M[4],grad_C[5]*m_inv_M[5]);
-                //delta_x[1]*=m_stiffness*s*1/6f;
-                delta_x[1]*=m_stiffness*s;
-                //更新p
-                for(int i=0;i<2;i++)
-                {
-                    m_particles[i].p += delta_x[i];
-                }
-                break;
-            //XPBD
-            case 2:    
-                //計算s
-                float s2=0;
-                for(int i=0;i<6;i++)
-                {
-                    s2+=grad_C[i]*m_inv_M[i]*grad_C[i];
-                }
-                // Calculate time-scaled compliance
-                float m_compliance=0.05f;//5*10負2次方
-                float m_delta_time=1/60f;// 公式:delta_frame_time/substep
-                float alpha_tilde = m_compliance / (m_delta_time * m_delta_time);
+        if(pbd07_mesh_cloth.PBD_OR_XPBD==1)
+        {  
+            //計算s
+            float s=0;
+            for(int i=0;i<6;i++)
+            {
+                //s+=grad_C[i]*1/6f*grad_C[i];
+                s+=grad_C[i]*m_inv_M[i]*grad_C[i];
+            }
+            s=-C/s;
+            //計算 delta_x
+            float m_stiffness=1f;
+            Vector3[] delta_x=new Vector3[2];
+            delta_x[0]=new Vector3(grad_C[0]*m_inv_M[0],grad_C[1]*m_inv_M[1],grad_C[2]*m_inv_M[2]);
+            // delta_x[0]*=m_stiffness*s*1/6f;
+            delta_x[0]*=m_stiffness*s;
+            delta_x[1]=new Vector3(grad_C[3]*m_inv_M[3],grad_C[4]*m_inv_M[4],grad_C[5]*m_inv_M[5]);
+            //delta_x[1]*=m_stiffness*s*1/6f;
+            delta_x[1]*=m_stiffness*s;
+            //更新p
+            for(int i=0;i<2;i++)
+            {
+                m_particles[i].p += delta_x[i];
+            }
+        }
+        else if(aerodynamics.PBD_OR_XPBD==2||cloth_gameobject.PBD_OR_XPBD==2||cloth_hit_sphere.PBD_OR_XPBD==2||cloth_mesh.PBD_OR_XPBD==2)
+        {   
+            //計算s
+            float s2=0;
+            for(int i=0;i<6;i++)
+            {
+                s2+=grad_C[i]*m_inv_M[i]*grad_C[i];
+            }
+            // Calculate time-scaled compliance
+            float m_compliance=0.05f;//5*10負2次方
+            float m_delta_time=1/3f;// 公式:delta_frame_time/substep
+            float alpha_tilde = m_compliance / (m_delta_time * m_delta_time);
 
-                // Calculate \Delta lagrange multiplier
-                float delta_lagrange_multiplier =(-C - alpha_tilde * m_lagrange_multiplier) / (s2+ alpha_tilde);
-                // Calculate \Delta x
-                Vector3[] xpbd_delta_x=new Vector3[2];
-                xpbd_delta_x[0]=new Vector3(grad_C[0]*m_inv_M[0],grad_C[1]*m_inv_M[1],grad_C[2]*m_inv_M[2]);
-                xpbd_delta_x[0]*=delta_lagrange_multiplier;
-                xpbd_delta_x[1]=new Vector3(grad_C[3]*m_inv_M[3],grad_C[4]*m_inv_M[4],grad_C[5]*m_inv_M[5]);
-                xpbd_delta_x[1]*=delta_lagrange_multiplier;
-                // Update predicted positions
-                for(int i=0;i<2;i++)
-                {
-                    m_particles[i].p += xpbd_delta_x[i];
-                }
-                // Update the lagrange multiplier
-                m_lagrange_multiplier += delta_lagrange_multiplier;
-                break;
+            // Calculate \Delta lagrange multiplier
+            float delta_lagrange_multiplier =(-C - alpha_tilde * m_lagrange_multiplier) / (s2+ alpha_tilde);
+            // Calculate \Delta x
+            Vector3[] xpbd_delta_x=new Vector3[2];
+            xpbd_delta_x[0]=new Vector3(grad_C[0]*m_inv_M[0],grad_C[1]*m_inv_M[1],grad_C[2]*m_inv_M[2]);
+            xpbd_delta_x[0]*=delta_lagrange_multiplier;
+            xpbd_delta_x[1]=new Vector3(grad_C[3]*m_inv_M[3],grad_C[4]*m_inv_M[4],grad_C[5]*m_inv_M[5]);
+            xpbd_delta_x[1]*=delta_lagrange_multiplier;
+            // Update predicted positions
+            for(int i=0;i<2;i++)
+            {
+                m_particles[i].p += xpbd_delta_x[i];
+            }
+            // Update the lagrange multiplier
+            m_lagrange_multiplier += delta_lagrange_multiplier;
         }
     }
     float calculateValue()

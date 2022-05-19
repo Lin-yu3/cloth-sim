@@ -2,10 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class cloth_sim : MonoBehaviour
+public class cloth_gameobject : MonoBehaviour
 {
-    int horizontal_resolution=50;//水平
-    int vertical_resolution=50;//垂直
+    int horizontal_resolution=30;//水平
+    int vertical_resolution=30;//垂直
+    public static int PBD_OR_XPBD=1;
+    //public static int PBD_OR_XPBD=2;
     GameObject[] sphere=new GameObject[2626];
     List<Particle> ball=new List<Particle>();
     Particle[] myball=new Particle[2626];

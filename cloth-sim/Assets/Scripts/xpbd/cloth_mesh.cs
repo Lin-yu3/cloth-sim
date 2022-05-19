@@ -2,25 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-public class edge_and_triangles : MonoBehaviour
+public class cloth_mesh : MonoBehaviour
 {  
     //from https://github.com/yuki-koyama/elasty/blob/master/examples/cloth-alembic/main.cpp
     //from https://github.com/yuki-koyama/elasty/blob/master/src/cloth-sim-object.cpp
     //from https://github.com/yuki-koyama/elasty/blob/master/src/utils.cpp
-    
     public Material material;
-    public GameObject myPrefab;
-    public int horizontal_resolution=50;//水平
-    public int vertical_resolution=50;//垂直
-    public bool MOVING_SPHERE_COLLISION = false;
+    public int solverIterators=2;
+    public static int PBD_OR_XPBD=2;
     List<Vector3> vertices=new List<Vector3>();
-    Vector3[] myVertices=new Vector3[2626];
-    Particle[] ball=new Particle[2626];
+    Vector3[] myVertices=new Vector3[976];
+    Particle[] ball=new Particle[976];
     List<int> triangles=new List<int>();
-    int[] myTriangles=new int[15150];
+    int[] myTriangles=new int[5490];
     List<Vector2> uvs= new List<Vector2>();
-    Vector2[] myUV=new Vector2[2626];
-    Vector3[] normals=new Vector3[2626];
+    Vector2[] myUV=new Vector2[976];
+    Vector3[] normals=new Vector3[976];
     List<DistanceConstraint> distconstraints = new List<DistanceConstraint>();
     List<FixedPointConstraint> fixconstraints = new List<FixedPointConstraint>();
     List<EnvironmentalCollisionConstraint> collconstraints = new List<EnvironmentalCollisionConstraint>();
@@ -31,16 +28,8 @@ public class edge_and_triangles : MonoBehaviour
     
     void Start()
     {
-        genVertices();
-        genTriangles();
+        generateClothMeshObjData(2,2,30,30);
         DrawMeshSetConstraint();
-        
-        if(MOVING_SPHERE_COLLISION==false){
-            sphere=Instantiate(myPrefab, new Vector3(0,1f,0), Quaternion.identity);
-        }
-        else{
-            sphere=Instantiate(myPrefab, new Vector3(0,1f,3), Quaternion.identity);
-        }
     }
     void Update()
     {
@@ -70,13 +59,9 @@ public class edge_and_triangles : MonoBehaviour
             foreach(EnvironmentalCollisionConstraint constraint in collconstraints){
                 constraint.m_lagrange_multiplier=0;
             }
-            generateCollisionConstraints();
             // Project Particles
-            int solverIterators=10;
+            
             for (int i = 0; i < solverIterators; i++){
-                foreach(EnvironmentalCollisionConstraint constraint in collconstraints){
-                    constraint.projectParticles();
-                }
                 foreach(DistanceConstraint constraint in distconstraints){
                     constraint.projectParticles();
                 }
@@ -97,8 +82,6 @@ public class edge_and_triangles : MonoBehaviour
                 //Update velocities
                 ball[i].v*=0.9999f;
             }
-            //Clear EnvironmentalCollisionConstraints
-            collconstraints.Clear();
         }
     }
     void DrawMeshSetConstraint()
@@ -291,44 +274,6 @@ public class edge_and_triangles : MonoBehaviour
             m_area_list[i]=area;
         } 
     }
-    void generateCollisionConstraints()
-    {
-        if(MOVING_SPHERE_COLLISION==false)
-        {
-            Vector3 center= sphere.transform.localPosition;
-            float tolerance=0.05f;
-            float radius=0.5f+0.02f;//大圓半徑+小圓半徑?
-            for(int i=0; i<ball.Length; i++)
-            {
-                Vector3 direction = ball[i].x - center;
-                if (direction.magnitude< radius + tolerance)
-                {
-                    Vector3 normal = direction.normalized;
-                    float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius;
-                    collconstraints.Add( new EnvironmentalCollisionConstraint(ball[i], normal, distance));
-                }
-            }
-        }
-        else if(MOVING_SPHERE_COLLISION==true)
-        {
-            // Collision with a moving sphere
-            sphere.transform.localPosition+=new Vector3(0,0,-0.03f);
-            float posZ= sphere.transform.position.z;
-            Vector3 center=new Vector3(0, 0.5f, posZ);
-            float tolerance= 0.05f;
-            float radius=0.5f+0.02f;//大圓半徑+小圓半徑?
-            for(int i=0; i<ball.Length; i++)
-            {
-                Vector3 direction = ball[i].x - center;
-                if (direction.magnitude< radius + tolerance)
-                {
-                    Vector3 normal = direction.normalized;
-                    float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius;
-                    collconstraints.Add( new EnvironmentalCollisionConstraint(ball[i], normal, distance));
-                }
-            }
-        } 
-    }
     void applyAerodynamicForces(Vector3 global_velocity, float drag_coeff, float lift_coeff)
     {
         float rho = 1.225f; // Taken from Wikipedia: https://en.wikipedia.org/wiki/Density_of_air
@@ -371,7 +316,7 @@ public class edge_and_triangles : MonoBehaviour
             ball[myTriangles[i * 3 + 2]].f += (m_2 / m_sum) * f;
         }
     } 
-    void genVertices()
+    void generateClothMeshObjData(int width, int height, int horizontal_resolution, int vertical_resolution)
     {
         // Vertices
         for (int v_index = 0; v_index <= vertical_resolution; ++v_index)
@@ -382,22 +327,19 @@ public class edge_and_triangles : MonoBehaviour
                 if (v_index % 2 == 0 || h_index == 0) u = h_index / (float) horizontal_resolution;
                 float v = v_index / (float)vertical_resolution;
                 //print("v: "+v);
-                float x = (u - 0.5f) * 2;
-                float y = (v - 0.5f) * 2;
+                float x = (u - 0.5f) * width;
+                float y = (v - 0.5f) * height;
                 //print("y: "+y);
                 vertices.Add(new Vector3(x, 0, y));
                 uvs.Add(new Vector2(u, v));
                 // Additional vetex at the even-indexed row
                 if (v_index % 2 == 1 && h_index == horizontal_resolution)
                 {
-                    vertices.Add(new Vector3(0.5f * 2, 0, y));
+                    vertices.Add(new Vector3(0.5f * width, 0, y));
                     uvs.Add(new Vector2(1, v));
                 }
             }
-        }   
-    }
-    void genTriangles()
-    {
+        }
         // Triangles
         for (int v_index = 0; v_index < vertical_resolution; ++v_index)
         {

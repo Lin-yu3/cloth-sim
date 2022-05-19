@@ -15,6 +15,8 @@ public class pbd05_30x30cloth : MonoBehaviour
         for(int j=0; j<=30; j++){
             for(int i=0; i<=30; i++){
                 sphere[i,j] = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                Color Blue=new Color(0,0,255);
+                sphere[i,j].GetComponent<Renderer>().material.color= Blue;
                 sphere[i,j].transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
                 sphere[i,j].transform.SetParent(transform);
                 //ball[i,j] = new Particle( new Vector3( (i/30f)*2-1,  -(j/30f)*2-1, 0 ) );
@@ -56,7 +58,7 @@ public class pbd05_30x30cloth : MonoBehaviour
                 constraints.Add( new DistanceConstraint(ball[i,j], ball[i+1,j+1], 2/30f*1.414f) );
             }
         }
-        // 斜邊/
+        //斜邊/
         for(int j=0; j<30; j++){
             for(int i=0; i<30; i++){
                 constraints.Add( new DistanceConstraint(ball[i,j+1], ball[i+1,j], 2/30f*1.414f) );
