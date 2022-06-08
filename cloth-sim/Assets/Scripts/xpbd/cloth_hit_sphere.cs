@@ -38,7 +38,7 @@ public class cloth_hit_sphere : MonoBehaviour
             sphere=Instantiate(myPrefab, new Vector3(0,1f,0), Quaternion.identity);
         }
         else{
-            sphere=Instantiate(myPrefab, new Vector3(0,1f,-3), Quaternion.identity);
+            sphere=Instantiate(myPrefab, new Vector3(0,1f,0), Quaternion.identity);
         }
     }
     void Update()
@@ -316,8 +316,9 @@ public class cloth_hit_sphere : MonoBehaviour
         {
             // Collision with a moving sphere
             sphere.transform.localPosition+=new Vector3(0,0,-0.03f);
-            float posZ= sphere.transform.position.z;
-            Vector3 center=new Vector3(0, 0.5f, posZ);
+            Vector3 center= sphere.transform.localPosition;
+            print("moving sphere center: "+center);
+            
             float tolerance= 0.05f;
             float radius=0.5f+0.02f;//大圓半徑+小圓半徑?
             for(int i=0; i<ball.Length; i++)
@@ -329,6 +330,11 @@ public class cloth_hit_sphere : MonoBehaviour
                     float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius;
                     collconstraints.Add( new EnvironmentalCollisionConstraint(ball[i], normal, distance));
                 }
+            }
+            if(collconstraints.Count==0){print("sphere is away from cloth!!!");}
+            if(center==new Vector3(0,1f,-30f)){
+                Destroy(sphere);
+                print("DESTROY SPHERE");
             }
         } 
     }

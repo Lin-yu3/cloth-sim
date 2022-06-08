@@ -8,11 +8,11 @@ public class cloth_gameobject : MonoBehaviour
     int vertical_resolution=30;//垂直
     public static int PBD_OR_XPBD=1;
     //public static int PBD_OR_XPBD=2;
-    GameObject[] sphere=new GameObject[2626];
+    GameObject[] sphere=new GameObject[976];
     List<Particle> ball=new List<Particle>();
-    Particle[] myball=new Particle[2626];
+    Particle[] myball=new Particle[976];
     List<int> triangles=new List<int>();
-    int[] myTriangles=new int[15150];
+    int[] myTriangles=new int[5490];
     List<DistanceConstraint> distconstraints = new List<DistanceConstraint>();
     List<FixedPointConstraint> fixconstraints = new List<FixedPointConstraint>();
 
@@ -27,7 +27,9 @@ public class cloth_gameobject : MonoBehaviour
         for(int i=0;i<myball.Length;i++)
         {
             sphere[i] = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            sphere[i].transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+            sphere[i].transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+            Color Blue=new Color(0,0,255);
+            sphere[i].GetComponent<Renderer>().material.color= Blue;
             sphere[i].transform.SetParent(transform);
             sphere[i].transform.localPosition = myball[i].x; 
             myball[i].m=1;
@@ -69,8 +71,8 @@ public class cloth_gameobject : MonoBehaviour
         // 依照每秒幾個frame設定
         //print("myball.Length: "+myball.Length);
        
-        for(int substep=0;substep<5;substep++)
-        {
+        // for(int substep=0;substep<5;substep++)
+        // {
             float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
             //重力模擬      
             for(int i=0;i<myball.Length;i++)
@@ -80,14 +82,14 @@ public class cloth_gameobject : MonoBehaviour
                 //print("myball["+i+"].w: "+ myball[i].w * myball[i].f);
             }
             // Reset Lagrange multipliers (only necessary for XPBD)
-            foreach(DistanceConstraint constraint in distconstraints){
-                constraint.m_lagrange_multiplier=0;
-            }
-            foreach(FixedPointConstraint constraint in fixconstraints){
-                constraint.m_lagrange_multiplier=0;
-            }
+            // foreach(DistanceConstraint constraint in distconstraints){
+            //     constraint.m_lagrange_multiplier=0;
+            // }
+            // foreach(FixedPointConstraint constraint in fixconstraints){
+            //     constraint.m_lagrange_multiplier=0;
+            // }
             // Project Particles
-            int solverIterators=15;
+            int solverIterators=10;
             for (int i = 0; i < solverIterators; i++){
                 foreach(DistanceConstraint constraint in distconstraints){
                     constraint.projectParticles();
@@ -109,7 +111,7 @@ public class cloth_gameobject : MonoBehaviour
                 //Update velocities
                 myball[i].v*=0.9999f;
             }
-        }
+        // }
     }
     
     void genVertices()

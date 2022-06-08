@@ -6,7 +6,8 @@ public class aerodynamics : MonoBehaviour
 {
     //https://github.com/yuki-koyama/elasty/blob/master/examples/aerodynamics/main.cpp
     public Material material;
-    public GameObject myPrefab;
+    private LineRenderer lr;
+    [SerializeField] private Transform[] area_ns;
     public static int PBD_OR_XPBD=2;
     public enum Condition { Without_Aerodynamics, With_Aerodynamics, Wind, Wind_High_Drag, Wind_High_Lift}
     public Condition condition;
@@ -28,7 +29,7 @@ public class aerodynamics : MonoBehaviour
     void Start()
     {
         generateClothMeshObjData(2,2,30,30);
-        DrawMeshSetConstraint();
+        DrawMeshSetConstraint();        
         //sphere=Instantiate(myPrefab, new Vector3(0,1,0), Quaternion.identity);
     }
     void Update()
@@ -42,12 +43,13 @@ public class aerodynamics : MonoBehaviour
                 Vector3 g=new Vector3(0,-9.8f,0);
                 ball[i].f=ball[i].m*g;
             }
-            //applyAerodynamicForces
+            //applyAerodynamicForces    
             WhichCondition();
             for(int i=0;i<ball.Length;i++)
             {//f=ma, a=f*1/m = f*w
                 ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
                 ball[i].p = ball[i].x + m_delta_physics_time * ball[i].v;
+                
             }
             // Reset Lagrange multipliers (only necessary for XPBD)
             foreach(DistanceConstraint constraint in distconstraints){
@@ -61,7 +63,7 @@ public class aerodynamics : MonoBehaviour
             }
             //generateCollisionConstraints();
             // Project Particles
-            int solverIterators=16;
+            int solverIterators=10;
             for (int i = 0; i < solverIterators; i++){
                 foreach(DistanceConstraint constraint in distconstraints){
                     constraint.projectParticles();
@@ -100,6 +102,7 @@ public class aerodynamics : MonoBehaviour
         gameObject.GetComponent<MeshRenderer>().material = material;
         mesh = GetComponent<MeshFilter>().mesh;
         mesh.Clear();
+        lr=GetComponent<LineRenderer>();
         //設置頂點
         for(int i=0;i<vertices.Count;i++){ vertices[i]+=new Vector3(0,2,1);}
         myVertices=vertices.ToArray();
@@ -126,7 +129,7 @@ public class aerodynamics : MonoBehaviour
         {
             ball[i].m = 1;
             ball[i].w = 1.0f/ball[i].m;
-            ball[i].f = new Vector3(0, -9.8f, 0);
+            // ball[i].f = new Vector3(0, 0, 0);
             if ((ball[i].x - new Vector3(1,2,0)).magnitude < range_radius)
             {
                 fixconstraints.Add( new FixedPointConstraint(ball[i],ball[i].x));   
@@ -261,7 +264,8 @@ public class aerodynamics : MonoBehaviour
                     break;
             }
         }
-        calculateAreas(); 
+        calculateAreas();
+        
     }
     void calculateAreas()
     {
@@ -281,8 +285,7 @@ public class aerodynamics : MonoBehaviour
             Vector3 x_2 = ball[m_triangle_list[i, 2]].x;
 
             float area = 0.5f *Vector3.Cross((x_1 - x_0),(x_2 - x_0)).magnitude;
-
-            m_area_list[i]=area;
+            // print("m_area_list[ "+i+"]: "+m_area_list[i]);
         } 
     }
     void generateCollisionConstraints()
@@ -305,23 +308,18 @@ public class aerodynamics : MonoBehaviour
     {
         if(condition == Condition.Without_Aerodynamics){
             applyAerodynamicForces(new Vector3(0,0,0) , 0, 0);
-            print("Without_Aerodynamics");
         }
         else if(condition == Condition.With_Aerodynamics){
             applyAerodynamicForces(new Vector3(0,0,0) , 0.06f, 0.03f);
-            print("With_Aerodynamics");
         }
         else if(condition == Condition.Wind){
             applyAerodynamicForces(new Vector3(0,0,8) , 0.08f, 0.03f);
-            print("Wind");
         }
         else if(condition == Condition.Wind_High_Drag){
             applyAerodynamicForces(new Vector3(0,0,8) , 0.08f, 0);
-            print("Wind_High_Drag");
         }
         else{
             applyAerodynamicForces(new Vector3(0,0,8) , 0.08f, 0.08f);
-            print("Wind_High_Lift");
         }              
     }
     void applyAerodynamicForces(Vector3 global_velocity, float drag_coeff, float lift_coeff)
@@ -347,18 +345,13 @@ public class aerodynamics : MonoBehaviour
 
             // Calculate the weighted average of the particle velocities
             Vector3 v_triangle = (m_0 * v_0 + m_1 * v_1 + m_2 * v_2) / m_sum;
-
-            // Calculate the relative velocity of the triangle
             Vector3 v_rel = v_triangle - global_velocity;
             float v_rel_squared = v_rel.sqrMagnitude;
-
             Vector3 cross= Vector3.Cross(x_1 - x_0, x_2 - x_0) ;
             float area = 0.5f * cross.magnitude;
             Vector3 n_either_side = cross.normalized;
             Vector3 n = (Vector3.Dot(n_either_side,v_rel) > 0.0) ? n_either_side : -n_either_side;
-
             float coeff = 0.5f * rho * area;
-
             // Note: This wind force model was proposed by [Wilson+14]
             Vector3 f = -coeff * ((drag_coeff - lift_coeff) * Vector3.Dot(v_rel,n) * v_rel + lift_coeff * v_rel_squared * n);
             ball[myTriangles[i * 3 + 0]].f += (m_0 / m_sum) * f;

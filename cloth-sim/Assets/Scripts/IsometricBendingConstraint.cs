@@ -69,7 +69,7 @@ public class IsometricBendingConstraint
         float [] grad_C = calculateGrad();
         if(norm(grad_C) < 1e-12) return;
         // PBD:1, XPBD:2
-        if(pbd07_mesh_cloth.PBD_OR_XPBD==1||cloth_gameobject.PBD_OR_XPBD==1)
+        if(pbd07_mesh_cloth.PBD_OR_XPBD==1)
         {
             float s = 0;
             for(int i=0; i<12; i++){
