@@ -2,20 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-public class aerodynamics : MonoBehaviour
+
+public class Test01_5x5_aerodynamic : MonoBehaviour
 {
-    //https://github.com/yuki-koyama/elasty/blob/master/examples/aerodynamics/main.cpp
     public Material material;
-    private LineRenderer lr;
+    GameObject newLine;
+    LineRenderer drawLine;
+    public float lineWidth;
     List<Vector3> linePoints;
     public static int PBD_OR_XPBD=2;
-    public enum Condition { Without_Aerodynamics, With_Aerodynamics, Wind, Wind_High_Drag, Wind_High_Lift}
-    public Condition condition;
+    // public enum Condition { Without_Aerodynamics, With_Aerodynamics, Wind, Wind_High_Drag, Wind_High_Lift}
+    // public Condition condition;
     List<Vector3> vertices=new List<Vector3>();
-    Vector3[] myVertices=new Vector3[976];
-    Particle[] ball=new Particle[976];
+    Vector3[] myVertices=new Vector3[39];
+    Particle[] ball=new Particle[39];
     List<int> triangles=new List<int>();
-    int[] myTriangles=new int[5490];
+    int[] myTriangles=new int[55];
     List<Vector2> uvs= new List<Vector2>();
     Vector2[] myUV;
     List<DistanceConstraint> distconstraints = new List<DistanceConstraint>();
@@ -25,16 +27,14 @@ public class aerodynamics : MonoBehaviour
     List<BendingConstraint> bendconstraints=new List<BendingConstraint>();
     GameObject sphere;
     Mesh mesh;
-    
     void Start()
     {
-        generateClothMeshObjData(2,2,30,30);
+        generateClothMeshObjData(2,2,5,5);
         DrawMeshSetConstraint(); 
-        linePoints=new List<Vector3>();       
-        //sphere=Instantiate(myPrefab, new Vector3(0,1,0), Quaternion.identity);
+        linePoints=new List<Vector3>();     
     }
     void Update()
-    {
+    {   
         for(int substep=0;substep<4;substep++)
         {
             float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
@@ -45,7 +45,8 @@ public class aerodynamics : MonoBehaviour
                 ball[i].f=ball[i].m*g;
             }
             //applyAerodynamicForces    
-            WhichCondition();
+            applyAerodynamicForces(new Vector3(0,0,0) , 0.06f, 0.03f);
+
             for(int i=0;i<ball.Length;i++)
             {//f=ma, a=f*1/m = f*w
                 ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
@@ -96,6 +97,58 @@ public class aerodynamics : MonoBehaviour
             collconstraints.Clear();
         }
     }
+    void applyAerodynamicForces(Vector3 global_velocity, float drag_coeff, float lift_coeff)
+    {
+        newLine=new GameObject();
+        drawLine=newLine.AddComponent<LineRenderer>();
+        drawLine.startColor=Color.blue;
+        drawLine.endColor=Color.blue;
+        drawLine.startWidth=lineWidth;
+        drawLine.endWidth=lineWidth; 
+        linePoints.Clear(); 
+        float rho = 1.225f; // Taken from Wikipedia: https://en.wikipedia.org/wiki/Density_of_air
+
+        //(drag_coeff >= lift_coeff);
+        for ( int i = 0; i < myTriangles.Length / 3; ++i)
+        {
+            Vector3 x_0 = ball[myTriangles[i * 3 + 0]].x;
+            Vector3 x_1 = ball[myTriangles[i * 3 + 1]].x;
+            Vector3 x_2 = ball[myTriangles[i * 3 + 2]].x;
+
+            Vector3 v_0 = ball[myTriangles[i * 3 + 0]].v;
+            Vector3 v_1 = ball[myTriangles[i * 3 + 1]].v;
+            Vector3 v_2 = ball[myTriangles[i * 3 + 2]].v;
+
+            float m_0 = ball[myTriangles[i * 3 + 0]].m;
+            float m_1 = ball[myTriangles[i * 3 + 1]].m;
+            float m_2 = ball[myTriangles[i * 3 + 2]].m;
+
+            float m_sum = m_0 + m_1 + m_2;
+
+            // Calculate the weighted average of the particle velocities
+            Vector3 v_triangle = (m_0 * v_0 + m_1 * v_1 + m_2 * v_2) / m_sum;
+            Vector3 v_rel = v_triangle - global_velocity;
+            float v_rel_squared = v_rel.sqrMagnitude;
+            Vector3 cross= Vector3.Cross(x_1 - x_0, x_2 - x_0) ;
+            linePoints.Add(x_0);
+            // linePoints.Add(cross);
+            float area = 0.5f * cross.magnitude;
+            Vector3 n_either_side = cross.normalized;
+            // linePoints.Add(n_either_side);
+            Vector3 n = (Vector3.Dot(n_either_side,v_rel) > 0.0) ? n_either_side : -n_either_side;
+            linePoints.Add(n);
+            float coeff = 0.5f * rho * area;
+            // Note: This wind force model was proposed by [Wilson+14]
+            Vector3 f = -coeff * ((drag_coeff - lift_coeff) * Vector3.Dot(v_rel,n) * v_rel + lift_coeff * v_rel_squared * n);
+            ball[myTriangles[i * 3 + 0]].f += (m_0 / m_sum) * f;
+            ball[myTriangles[i * 3 + 1]].f += (m_1 / m_sum) * f;
+            ball[myTriangles[i * 3 + 2]].f += (m_2 / m_sum) * f;
+
+        }
+        drawLine.positionCount=linePoints.Count;
+        drawLine.SetPositions(linePoints.ToArray());
+        linePoints.Clear();
+    } 
     void DrawMeshSetConstraint()
     {
         gameObject.AddComponent<MeshFilter>();
@@ -103,7 +156,6 @@ public class aerodynamics : MonoBehaviour
         gameObject.GetComponent<MeshRenderer>().material = material;
         mesh = GetComponent<MeshFilter>().mesh;
         mesh.Clear();
-        lr=GetComponent<LineRenderer>();
         //設置頂點
         for(int i=0;i<vertices.Count;i++){ vertices[i]+=new Vector3(0,2,1);}
         myVertices=vertices.ToArray();
@@ -289,78 +341,7 @@ public class aerodynamics : MonoBehaviour
             // print("m_area_list[ "+i+"]: "+m_area_list[i]);
         } 
     }
-    void generateCollisionConstraints()
-    {
-        Vector3 center= sphere.transform.localPosition;
-        float tolerance=0.01f;
-        float radius=0.5f+0.01f;//大圓半徑+小圓半徑?
-        for(int i=0; i<ball.Length; i++)
-        {
-            Vector3 direction = ball[i].x - center;
-            if (direction.magnitude< radius + tolerance)
-            {
-                Vector3 normal = direction.normalized;
-                float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius;
-                collconstraints.Add( new EnvironmentalCollisionConstraint(ball[i], normal, distance));
-            }
-        }
-    }
-    void WhichCondition()
-    {
-        if(condition == Condition.Without_Aerodynamics){
-            applyAerodynamicForces(new Vector3(0,0,0) , 0, 0);
-        }
-        else if(condition == Condition.With_Aerodynamics){
-            applyAerodynamicForces(new Vector3(0,0,0) , 0.06f, 0.03f);
-        }
-        else if(condition == Condition.Wind){
-            applyAerodynamicForces(new Vector3(0,0,8) , 0.08f, 0.03f);
-        }
-        else if(condition == Condition.Wind_High_Drag){
-            applyAerodynamicForces(new Vector3(0,0,8) , 0.08f, 0);
-        }
-        else{
-            applyAerodynamicForces(new Vector3(0,0,8) , 0.08f, 0.08f);
-        }              
-    }
-    void applyAerodynamicForces(Vector3 global_velocity, float drag_coeff, float lift_coeff)
-    {
-        float rho = 1.225f; // Taken from Wikipedia: https://en.wikipedia.org/wiki/Density_of_air
-
-        //(drag_coeff >= lift_coeff);
-        for ( int i = 0; i < myTriangles.Length / 3; ++i)
-        {
-            Vector3 x_0 = ball[myTriangles[i * 3 + 0]].x;
-            Vector3 x_1 = ball[myTriangles[i * 3 + 1]].x;
-            Vector3 x_2 = ball[myTriangles[i * 3 + 2]].x;
-
-            Vector3 v_0 = ball[myTriangles[i * 3 + 0]].v;
-            Vector3 v_1 = ball[myTriangles[i * 3 + 1]].v;
-            Vector3 v_2 = ball[myTriangles[i * 3 + 2]].v;
-
-            float m_0 = ball[myTriangles[i * 3 + 0]].m;
-            float m_1 = ball[myTriangles[i * 3 + 1]].m;
-            float m_2 = ball[myTriangles[i * 3 + 2]].m;
-
-            float m_sum = m_0 + m_1 + m_2;
-
-            // Calculate the weighted average of the particle velocities
-            Vector3 v_triangle = (m_0 * v_0 + m_1 * v_1 + m_2 * v_2) / m_sum;
-            Vector3 v_rel = v_triangle - global_velocity;
-            float v_rel_squared = v_rel.sqrMagnitude;
-            Vector3 cross= Vector3.Cross(x_1 - x_0, x_2 - x_0) ;
-            float area = 0.5f * cross.magnitude;
-            Vector3 n_either_side = cross.normalized;
-            Vector3 n = (Vector3.Dot(n_either_side,v_rel) > 0.0) ? n_either_side : -n_either_side;
-            linePoints.Add(n);
-            float coeff = 0.5f * rho * area;
-            // Note: This wind force model was proposed by [Wilson+14]
-            Vector3 f = -coeff * ((drag_coeff - lift_coeff) * Vector3.Dot(v_rel,n) * v_rel + lift_coeff * v_rel_squared * n);
-            ball[myTriangles[i * 3 + 0]].f += (m_0 / m_sum) * f;
-            ball[myTriangles[i * 3 + 1]].f += (m_1 / m_sum) * f;
-            ball[myTriangles[i * 3 + 2]].f += (m_2 / m_sum) * f;
-        }
-    } 
+    
     void generateClothMeshObjData(int width, int height, int horizontal_resolution, int vertical_resolution)
     {
         // Vertices

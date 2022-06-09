@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 599909394}
   - component: {fileID: 599909396}
   - component: {fileID: 599909397}
+  - component: {fileID: 599909398}
   m_Layer: 0
   m_Name: empty
   m_TagString: Untagged
@@ -179,14 +180,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 599909393}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: daaa92a4b58a15c41b9e0991c34f9507, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   material: {fileID: 2100000, guid: 8462b9bc4b3f8bb4c945cd990e8aa3f5, type: 2}
-  area_ns:
-  - {fileID: 599909395}
   condition: 1
 --- !u!114 &599909397
 MonoBehaviour:
@@ -195,13 +194,26 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 599909393}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: db3fe2b4f1165134bb2f04284f97ca96, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   material: {fileID: 2100000, guid: 8462b9bc4b3f8bb4c945cd990e8aa3f5, type: 2}
-  solverIterators: 2
+  solverIterators: 10
+--- !u!114 &599909398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 599909393}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bacbbdbe18e87e349a5fb37bf8966030, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  FpsText: {fileID: 1857584116}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -395,7 +407,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1857584115
 RectTransform:
   m_ObjectHideFlags: 0

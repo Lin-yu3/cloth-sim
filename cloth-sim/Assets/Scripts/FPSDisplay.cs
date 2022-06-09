@@ -14,8 +14,8 @@ public class FPSDisplay : MonoBehaviour
         frameCount++;
         if(time>=pollingTime)
         {
-            float frameRate=(float)frameCount/time;
-            //int frameRate=Mathf.RoundToInt(frameCount/time);
+            // float frameRate=(float)frameCount/time;
+            int frameRate=Mathf.RoundToInt(frameCount/time);
             FpsText.text=frameRate.ToString()+" FPS";
             time-=pollingTime;
             frameCount=0;
