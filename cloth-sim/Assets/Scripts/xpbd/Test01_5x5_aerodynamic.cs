@@ -6,18 +6,28 @@ using System;
 public class Test01_5x5_aerodynamic : MonoBehaviour
 {
     public Material material;
-    GameObject newLine;
-    LineRenderer drawLine;
+    public Material normal,drag,lift;
     public float lineWidth;
+    // Draw normal
+    GameObject newLine;
+    LineRenderer drawLine;  
     List<Vector3> linePoints;
+    // Draw drag
+    GameObject newDrag;
+    LineRenderer drawDrag;
+    List<Vector3> dragPoints;
+    // Draw lift
+    GameObject newLift;
+    LineRenderer drawLift;
+    List<Vector3> liftPoints;
     public static int PBD_OR_XPBD=2;
     // public enum Condition { Without_Aerodynamics, With_Aerodynamics, Wind, Wind_High_Drag, Wind_High_Lift}
     // public Condition condition;
     List<Vector3> vertices=new List<Vector3>();
-    Vector3[] myVertices=new Vector3[39];
-    Particle[] ball=new Particle[39];
+    Vector3[] myVertices=new Vector3[976];
+    Particle[] ball=new Particle[976];
     List<int> triangles=new List<int>();
-    int[] myTriangles=new int[55];
+    int[] myTriangles=new int[5490];
     List<Vector2> uvs= new List<Vector2>();
     Vector2[] myUV;
     List<DistanceConstraint> distconstraints = new List<DistanceConstraint>();
@@ -29,9 +39,11 @@ public class Test01_5x5_aerodynamic : MonoBehaviour
     Mesh mesh;
     void Start()
     {
-        generateClothMeshObjData(2,2,5,5);
+        generateClothMeshObjData(2,2,30,30);
         DrawMeshSetConstraint(); 
-        linePoints=new List<Vector3>();     
+        linePoints=new List<Vector3>();
+        dragPoints=new List<Vector3>();
+        liftPoints=new List<Vector3>();     
     }
     void Update()
     {   
@@ -46,7 +58,7 @@ public class Test01_5x5_aerodynamic : MonoBehaviour
             }
             //applyAerodynamicForces    
             applyAerodynamicForces(new Vector3(0,0,0) , 0.06f, 0.03f);
-
+            
             for(int i=0;i<ball.Length;i++)
             {//f=ma, a=f*1/m = f*w
                 ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
@@ -99,13 +111,27 @@ public class Test01_5x5_aerodynamic : MonoBehaviour
     }
     void applyAerodynamicForces(Vector3 global_velocity, float drag_coeff, float lift_coeff)
     {
-        newLine=new GameObject();
-        drawLine=newLine.AddComponent<LineRenderer>();
-        drawLine.startColor=Color.blue;
-        drawLine.endColor=Color.blue;
+        if(newLine==null)
+        {
+            newLine=new GameObject();
+            drawLine=newLine.AddComponent<LineRenderer>();
+            newDrag=new GameObject();
+            drawDrag=newDrag.AddComponent<LineRenderer>();
+            newLift=new GameObject();
+            drawLift=newLift.AddComponent<LineRenderer>();
+        }
+        drawLine.material=normal;
         drawLine.startWidth=lineWidth;
-        drawLine.endWidth=lineWidth; 
-        linePoints.Clear(); 
+        drawLine.endWidth=lineWidth;  
+        
+        drawDrag.material=drag;
+        drawDrag.startWidth=lineWidth;
+        drawDrag.endWidth=lineWidth; 
+    
+        drawLift.material=lift;
+        drawLift.startWidth=lineWidth;
+        drawLift.endWidth=lineWidth;
+        
         float rho = 1.225f; // Taken from Wikipedia: https://en.wikipedia.org/wiki/Density_of_air
 
         //(drag_coeff >= lift_coeff);
@@ -131,23 +157,30 @@ public class Test01_5x5_aerodynamic : MonoBehaviour
             float v_rel_squared = v_rel.sqrMagnitude;
             Vector3 cross= Vector3.Cross(x_1 - x_0, x_2 - x_0) ;
             linePoints.Add(x_0);
-            // linePoints.Add(cross);
             float area = 0.5f * cross.magnitude;
             Vector3 n_either_side = cross.normalized;
-            // linePoints.Add(n_either_side);
             Vector3 n = (Vector3.Dot(n_either_side,v_rel) > 0.0) ? n_either_side : -n_either_side;
-            linePoints.Add(n);
+            linePoints.Add(x_0+0.1f*n);
             float coeff = 0.5f * rho * area;
             // Note: This wind force model was proposed by [Wilson+14]
             Vector3 f = -coeff * ((drag_coeff - lift_coeff) * Vector3.Dot(v_rel,n) * v_rel + lift_coeff * v_rel_squared * n);
+            // dragPoints.Add(x_0);
+            // dragPoints.Add(x_0 + 0.0001f*(drag_coeff - lift_coeff) * Vector3.Dot(v_rel,n) * v_rel);
+            // liftPoints.Add(x_0);
+            // liftPoints.Add(x_0 + 0.0001f*lift_coeff * v_rel_squared * n);
             ball[myTriangles[i * 3 + 0]].f += (m_0 / m_sum) * f;
             ball[myTriangles[i * 3 + 1]].f += (m_1 / m_sum) * f;
             ball[myTriangles[i * 3 + 2]].f += (m_2 / m_sum) * f;
-
         }
         drawLine.positionCount=linePoints.Count;
         drawLine.SetPositions(linePoints.ToArray());
         linePoints.Clear();
+        drawDrag.positionCount=dragPoints.Count;
+        drawDrag.SetPositions(dragPoints.ToArray());
+        dragPoints.Clear();
+        drawLift.positionCount=liftPoints.Count;
+        drawLift.SetPositions(liftPoints.ToArray());
+        liftPoints.Clear();
     } 
     void DrawMeshSetConstraint()
     {

@@ -246,7 +246,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   material: {fileID: 2100000, guid: 8462b9bc4b3f8bb4c945cd990e8aa3f5, type: 2}
-  lineWidth: 0.1
+  normal: {fileID: 2100000, guid: d366780a4c3f6fb4ab16a7cb98818e98, type: 2}
+  drag: {fileID: 2100000, guid: cbda31bd184aae24d867fe48871e7481, type: 2}
+  lift: {fileID: 2100000, guid: bb3bf57d640f4ad49b7f081f93a1c2d2, type: 2}
+  lineWidth: 0.01
 --- !u!4 &922012419
 Transform:
   m_ObjectHideFlags: 0
@@ -337,10 +340,10 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -2.9, y: 0.89, z: -0.07}
+  m_LocalRotation: {x: 0, y: 0.95881975, z: 0, w: 0.2840153}
+  m_LocalPosition: {x: -2, y: 1, z: 2.77}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 147, z: 0}

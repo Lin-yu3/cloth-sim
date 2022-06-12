@@ -1,16 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System;
-public class aerodynamics : MonoBehaviour
+using UnityEngine;
+
+public class aero_global_and_local_velocity : MonoBehaviour
 {
     //https://github.com/yuki-koyama/elasty/blob/master/examples/aerodynamics/main.cpp
     public Material material;
-    private LineRenderer lr;
-    List<Vector3> linePoints;
     public static int PBD_OR_XPBD=2;
-    public enum Condition { Without_Aerodynamics, With_Aerodynamics, Wind, Wind_High_Drag, Wind_High_Lift}
-    public Condition condition;
+    public GameObject GlobalVelocity;
+    public GameObject LocalVelocity;
+    public float width;
+    public Vector3 global_velocity=new Vector3();
+    Vector3 local_velocity;
+    public float drag_coeff,lift_coeff;
     List<Vector3> vertices=new List<Vector3>();
     Vector3[] myVertices=new Vector3[976];
     Particle[] ball=new Particle[976];
@@ -23,14 +26,14 @@ public class aerodynamics : MonoBehaviour
     List<EnvironmentalCollisionConstraint> collconstraints = new List<EnvironmentalCollisionConstraint>();
     List<IsometricBendingConstraint> isoconstraints = new List<IsometricBendingConstraint>();
     List<BendingConstraint> bendconstraints=new List<BendingConstraint>();
-    GameObject sphere;
+    GameObject direction,direction2;
     Mesh mesh;
     
     void Start()
     {
         generateClothMeshObjData(2,2,30,30);
-        DrawMeshSetConstraint();       
-        //sphere=Instantiate(myPrefab, new Vector3(0,1,0), Quaternion.identity);
+        DrawMeshSetConstraint();      
+        ShowVelocityDirection();
     }
     void Update()
     {
@@ -44,7 +47,7 @@ public class aerodynamics : MonoBehaviour
                 ball[i].f=ball[i].m*g;
             }
             //applyAerodynamicForces    
-            WhichCondition();
+            applyAerodynamicForces(global_velocity, drag_coeff, lift_coeff);
             for(int i=0;i<ball.Length;i++)
             {//f=ma, a=f*1/m = f*w
                 ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
@@ -94,6 +97,19 @@ public class aerodynamics : MonoBehaviour
             //Clear EnvironmentalCollisionConstraints
             collconstraints.Clear();
         }
+    }
+    void ShowVelocityDirection()
+    {
+        //global velcoity
+        direction=Instantiate(GlobalVelocity, global_velocity, Quaternion.identity);
+        Vector3 p1 = global_velocity;
+        Vector3 p2 = new Vector3(0,2,0);
+        direction.transform.position = (p1 + p2) / 2/40;//糖絲位置=球與球之間的距離
+        direction.transform.rotation = Quaternion.FromToRotation(Vector3.up, p1 - p2);//依據兩球的位置旋轉
+        direction.transform.localScale = new Vector3(width, (p1 - p2).magnitude / 10f, width);//縮放(x,兩球距離,z)
+        //local velocity
+        local_velocity = Input.mousePosition;
+        direction2=Instantiate(LocalVelocity, local_velocity, Quaternion.identity);
     }
     void DrawMeshSetConstraint()
     {
@@ -287,40 +303,6 @@ public class aerodynamics : MonoBehaviour
             // print("m_area_list[ "+i+"]: "+m_area_list[i]);
         } 
     }
-    void generateCollisionConstraints()
-    {
-        Vector3 center= sphere.transform.localPosition;
-        float tolerance=0.01f;
-        float radius=0.5f+0.01f;//大圓半徑+小圓半徑?
-        for(int i=0; i<ball.Length; i++)
-        {
-            Vector3 direction = ball[i].x - center;
-            if (direction.magnitude< radius + tolerance)
-            {
-                Vector3 normal = direction.normalized;
-                float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius;
-                collconstraints.Add( new EnvironmentalCollisionConstraint(ball[i], normal, distance));
-            }
-        }
-    }
-    void WhichCondition()
-    {
-        if(condition == Condition.Without_Aerodynamics){
-            applyAerodynamicForces(new Vector3(0,0,0) , 0, 0);
-        }
-        else if(condition == Condition.With_Aerodynamics){
-            applyAerodynamicForces(new Vector3(0,0,0) , 0.8f, 0.4f);
-        }
-        else if(condition == Condition.Wind){
-            applyAerodynamicForces(new Vector3(0,0,80) , 0.8f, 0.3f);
-        }
-        else if(condition == Condition.Wind_High_Drag){
-            applyAerodynamicForces(new Vector3(0,0,80) , 0.8f, 0);
-        }
-        else{
-            applyAerodynamicForces(new Vector3(0,0,80) , 0.8f, 0.8f);
-        }              
-    }
     void applyAerodynamicForces(Vector3 global_velocity, float drag_coeff, float lift_coeff)
     {
         float rho = 1.225f; // Taken from Wikipedia: https://en.wikipedia.org/wiki/Density_of_air
@@ -438,3 +420,4 @@ public class aerodynamics : MonoBehaviour
         }
     }
 }
+
