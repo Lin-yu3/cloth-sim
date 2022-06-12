@@ -226,13 +226,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0894c2786b43be74bb59d569d352a427, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  material: {fileID: 2100000, guid: 8462b9bc4b3f8bb4c945cd990e8aa3f5, type: 2}
-  myPrefab: {fileID: 828866531083273513, guid: f1190548c39300b4a84382d73a4f65b6, type: 3}
-  width: 1
+  ClothColor: {fileID: 2100000, guid: 8462b9bc4b3f8bb4c945cd990e8aa3f5, type: 2}
+  GlobalVelocity: {fileID: 828866531083273513, guid: f1190548c39300b4a84382d73a4f65b6, type: 3}
+  LocalVelocity: {fileID: 6376151302341824456, guid: 6c6e6c88e6944604ea4c5743fed50c9b, type: 3}
   global_velocity: {x: 0, y: 0, z: 40}
-  local_velocity: {x: 0, y: 0, z: 0}
   drag_coeff: 0.4
   lift_coeff: 0.4
+  width: 1
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -402,10 +402,10 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0, y: 0.95881975, z: 0, w: 0.2840153}
-  m_LocalPosition: {x: -2, y: 1, z: 2.77}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 0.01, y: 0.66, z: 2.77}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 147, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}

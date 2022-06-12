@@ -6,14 +6,14 @@ using UnityEngine;
 public class aero_global_and_local_velocity : MonoBehaviour
 {
     //https://github.com/yuki-koyama/elasty/blob/master/examples/aerodynamics/main.cpp
-    public Material material;
+    public Material ClothColor;
     public static int PBD_OR_XPBD=2;
     public GameObject GlobalVelocity;
     public GameObject LocalVelocity;
-    public float width;
     public Vector3 global_velocity=new Vector3();
-    Vector3 local_velocity;
     public float drag_coeff,lift_coeff;
+    public float width;
+    Vector3 local_velocity;
     List<Vector3> vertices=new List<Vector3>();
     Vector3[] myVertices=new Vector3[976];
     Particle[] ball=new Particle[976];
@@ -37,6 +37,10 @@ public class aero_global_and_local_velocity : MonoBehaviour
     }
     void Update()
     {
+        if(Input.GetMouseButton(0))
+        {
+           Debug.DrawRay(Camera.main.ScreenToWorldPoint(Input.mousePosition),GetMousePosition(),Color.green);
+        }
         for(int substep=0;substep<4;substep++)
         {
             float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
@@ -98,24 +102,25 @@ public class aero_global_and_local_velocity : MonoBehaviour
             collconstraints.Clear();
         }
     }
+    Vector3 GetMousePosition(){
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        return ray.origin + ray.direction*10;
+    }
     void ShowVelocityDirection()
     {
-        //global velcoity
+        // global velcoity
         direction=Instantiate(GlobalVelocity, global_velocity, Quaternion.identity);
         Vector3 p1 = global_velocity;
-        Vector3 p2 = new Vector3(0,2,0);
+        Vector3 p2 = new Vector3(0,1,0);//cloth center
         direction.transform.position = (p1 + p2) / 2/40;//糖絲位置=球與球之間的距離
         direction.transform.rotation = Quaternion.FromToRotation(Vector3.up, p1 - p2);//依據兩球的位置旋轉
         direction.transform.localScale = new Vector3(width, (p1 - p2).magnitude / 10f, width);//縮放(x,兩球距離,z)
-        //local velocity
-        local_velocity = Input.mousePosition;
-        direction2=Instantiate(LocalVelocity, local_velocity, Quaternion.identity);
     }
     void DrawMeshSetConstraint()
     {
         gameObject.AddComponent<MeshFilter>();
         gameObject.AddComponent<MeshRenderer>();
-        gameObject.GetComponent<MeshRenderer>().material = material;
+        gameObject.GetComponent<MeshRenderer>().material = ClothColor;
         mesh = GetComponent<MeshFilter>().mesh;
         mesh.Clear();
         //設置頂點
