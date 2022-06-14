@@ -10,10 +10,11 @@ public class aero_global_and_local_velocity : MonoBehaviour
     public static int PBD_OR_XPBD=2;
     public GameObject GlobalVelocity;
     public GameObject LocalVelocity;
-    public Vector3 global_velocity=new Vector3();
+    Vector3 global_velocity=new Vector3(0,0,40);
     public float drag_coeff,lift_coeff;
     public float width;
     Vector3 local_velocity;
+    List<Vector3> LocalWind=new List<Vector3>();
     List<Vector3> vertices=new List<Vector3>();
     Vector3[] myVertices=new Vector3[976];
     Particle[] ball=new Particle[976];
@@ -33,14 +34,16 @@ public class aero_global_and_local_velocity : MonoBehaviour
     {
         generateClothMeshObjData(2,2,30,30);
         DrawMeshSetConstraint();      
-        ShowVelocityDirection();
+        // ShowVelocityDirection();
     }
     void Update()
     {
-        if(Input.GetMouseButton(0))
-        {
-           Debug.DrawRay(Camera.main.ScreenToWorldPoint(Input.mousePosition),GetMousePosition(),Color.green);
-        }
+        global_velocity=20*GlobalVelocity.transform.position;
+        // print("global_velocity:　"+global_velocity);
+        // if(Input.GetMouseButton(0))
+        // {
+        //     Debug.DrawRay(Camera.main.ScreenToWorldPoint(Input.mousePosition),GetMousePosition(),Color.green);
+        // }
         for(int substep=0;substep<4;substep++)
         {
             float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
@@ -312,7 +315,15 @@ public class aero_global_and_local_velocity : MonoBehaviour
     {
         float rho = 1.225f; // Taken from Wikipedia: https://en.wikipedia.org/wiki/Density_of_air
 
-        //(drag_coeff >= lift_coeff);
+        local_velocity = global_velocity;
+        for(int i=0;i<ball.Length;i++){
+            if(ball[i].x.x<local_velocity.x+0.05 && ball[i].x.y<local_velocity.y+0.05)
+            {
+                print("in the aera of local wind: "+ball[i].x);
+                global_velocity+=local_velocity;  
+            }
+        }
+        
         for ( int i = 0; i < myTriangles.Length / 3; ++i)
         {
             Vector3 x_0 = ball[myTriangles[i * 3 + 0]].x;
@@ -328,7 +339,7 @@ public class aero_global_and_local_velocity : MonoBehaviour
             float m_2 = ball[myTriangles[i * 3 + 2]].m;
 
             float m_sum = m_0 + m_1 + m_2;
-
+            
             // Calculate the weighted average of the particle velocities
             Vector3 v_triangle = (m_0 * v_0 + m_1 * v_1 + m_2 * v_2) / m_sum;
             Vector3 v_rel = v_triangle - global_velocity;
