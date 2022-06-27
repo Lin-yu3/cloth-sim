@@ -317,10 +317,10 @@ public class aero_global_and_local_velocity : MonoBehaviour
 
         local_velocity = global_velocity;
         for(int i=0;i<ball.Length;i++){
-            if(ball[i].x.x<local_velocity.x+0.05 && ball[i].x.y<local_velocity.y+0.05)
+            if(ball[i].x.x<local_velocity.x+0.3 && ball[i].x.y<local_velocity.y+0.3)
             {
-                print("in the aera of local wind: "+ball[i].x);
-                global_velocity+=local_velocity;  
+                // print("in the aera of local wind: "+ball[i].x);
+                local_velocity+=10*local_velocity;  
             }
         }
         
