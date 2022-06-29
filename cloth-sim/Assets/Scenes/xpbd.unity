@@ -135,7 +135,6 @@ GameObject:
   - component: {fileID: 599909394}
   - component: {fileID: 599909396}
   - component: {fileID: 599909397}
-  - component: {fileID: 599909398}
   - component: {fileID: 599909399}
   - component: {fileID: 599909400}
   m_Layer: 0
@@ -202,19 +201,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   material: {fileID: 2100000, guid: 8462b9bc4b3f8bb4c945cd990e8aa3f5, type: 2}
   solverIterators: 10
---- !u!114 &599909398
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 599909393}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bacbbdbe18e87e349a5fb37bf8966030, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  FpsText: {fileID: 0}
 --- !u!114 &599909399
 MonoBehaviour:
   m_ObjectHideFlags: 0
