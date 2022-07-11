@@ -307,7 +307,7 @@ public class cloth_hit_sphere : MonoBehaviour
                 if (direction.magnitude< radius + tolerance)
                 {
                     Vector3 normal = direction.normalized;
-                    float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius;
+                    float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius+ tolerance;
                     collconstraints.Add( new EnvironmentalCollisionConstraint(ball[i], normal, distance));
                 }
             }
