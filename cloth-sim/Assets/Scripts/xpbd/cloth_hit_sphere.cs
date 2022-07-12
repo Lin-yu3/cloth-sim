@@ -299,7 +299,7 @@ public class cloth_hit_sphere : MonoBehaviour
         if(MOVING_SPHERE_COLLISION==false)
         {
             Vector3 center= sphere.transform.localPosition;
-            float tolerance=0.01f;
+            float tolerance=0.02f;
             float radius=0.5f+0.02f;//大圓半徑+小圓半徑?
             for(int i=0; i<ball.Length; i++)
             {

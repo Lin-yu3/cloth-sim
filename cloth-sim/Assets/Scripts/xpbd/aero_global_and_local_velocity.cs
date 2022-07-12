@@ -9,7 +9,6 @@ public class aero_global_and_local_velocity : MonoBehaviour
     public Material ClothColor;
     public static int PBD_OR_XPBD=2;
     public GameObject GlobalVelocity;
-    public GameObject LocalVelocity;
     Vector3 global_velocity=new Vector3(0,0,40);
     public float drag_coeff,lift_coeff;
     public float width;
