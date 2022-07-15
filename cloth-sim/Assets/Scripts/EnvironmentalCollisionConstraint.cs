@@ -34,7 +34,7 @@ public class EnvironmentalCollisionConstraint
     public void projectParticles()
     {
         float C = calculateValue();
-        if(C>=0.0f)return; // Unilateral project
+        if(C>=0.0f)return; // Unilateral, 若布料沒穿透碰撞物則跳出 
         float [] grad_C = calculateGrad();
         if( norm(grad_C) < 1e-12) return;
         // PBD:1, XPBD:2
