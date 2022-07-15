@@ -38,7 +38,7 @@ public class cloth_hit_sphere : MonoBehaviour
             sphere=Instantiate(myPrefab, new Vector3(0,1f,0), Quaternion.identity);
         }
         else{
-            sphere=Instantiate(myPrefab, new Vector3(0,1f,1.8f), Quaternion.identity);
+            sphere=Instantiate(myPrefab, new Vector3(0,1f,0), Quaternion.identity);
         }
     }
     void Update()
@@ -300,14 +300,14 @@ public class cloth_hit_sphere : MonoBehaviour
         {
             Vector3 center= sphere.transform.localPosition;
             float tolerance=0.02f;
-            float radius=0.5f+0.02f;//大圓半徑+小圓半徑?
+            float radius=0.5f+0.01f;//大圓半徑+小圓半徑?
             for(int i=0; i<ball.Length; i++)
             {
                 Vector3 direction = ball[i].x - center;
                 if (direction.magnitude< radius + tolerance)
                 {
                     Vector3 normal = direction.normalized;
-                    float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius + tolerance;
+                    float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius ;
                     collconstraints.Add( new EnvironmentalCollisionConstraint(ball[i], normal, distance));
                 }
             }
@@ -315,19 +315,19 @@ public class cloth_hit_sphere : MonoBehaviour
         else if(MOVING_SPHERE_COLLISION==true)
         {
             // Collision with a moving sphere
-            sphere.transform.localPosition+=new Vector3(0,0,-0.03f);
+            sphere.transform.localPosition+=new Vector3(0,0,0.03f);
             Vector3 center= sphere.transform.localPosition;
             print("moving sphere center: "+center);
             
             float tolerance= 0.025f;
-            float radius=0.5f+0.02f;//大圓半徑+小圓半徑?
+            float radius=0.5f+0.01f;//大圓半徑+小圓半徑?
             for(int i=0; i<ball.Length; i++)
             {
                 Vector3 direction = ball[i].x - center;
                 if (direction.magnitude< radius + tolerance)
                 {
                     Vector3 normal = direction.normalized;
-                    float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius + tolerance;
+                    float distance = (center.x*normal.x+center.y*normal.y+center.z*normal.z) + radius ;
                     collconstraints.Add( new EnvironmentalCollisionConstraint(ball[i], normal, distance));
                 }
             }

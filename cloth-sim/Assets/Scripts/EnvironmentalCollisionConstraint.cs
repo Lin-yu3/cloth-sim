@@ -34,6 +34,7 @@ public class EnvironmentalCollisionConstraint
     public void projectParticles()
     {
         float C = calculateValue();
+        if(C>=0.0f)return; // Unilateral project
         float [] grad_C = calculateGrad();
         if( norm(grad_C) < 1e-12) return;
         // PBD:1, XPBD:2

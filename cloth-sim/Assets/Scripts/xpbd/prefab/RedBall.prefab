@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6775917932654392949}
   - component: {fileID: 6775917932654392948}
   m_Layer: 0
-  m_Name: myPrefab
+  m_Name: RedBall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
