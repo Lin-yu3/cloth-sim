@@ -132,7 +132,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 93314160}
-  - component: {fileID: 93314161}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -154,20 +153,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &93314161
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 93314159}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 05a3e54fe0caf204fb358d0b12dd4cda, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  material: {fileID: 2100000, guid: bdbaaf881a1c1d04f845702b85c5e9d4, type: 2}
-  solverIterators: 10
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -371,7 +356,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1290747832}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0894c2786b43be74bb59d569d352a427, type: 3}
   m_Name: 
@@ -380,7 +365,7 @@ MonoBehaviour:
   GlobalVelocity: {fileID: 0}
   drag_coeff: 0
   lift_coeff: 0
-  width: 0
+  width: 0.2
 --- !u!114 &1290747834
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -388,7 +373,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1290747832}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: db3fe2b4f1165134bb2f04284f97ca96, type: 3}
   m_Name: 
