@@ -2,17 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-
-public class Test_NotSquareCloth : MonoBehaviour
-{
+public class cloth_T : MonoBehaviour
+{  
+    //from https://github.com/yuki-koyama/elasty/blob/master/examples/cloth-alembic/main.cpp
+    //from https://github.com/yuki-koyama/elasty/blob/master/src/cloth-sim-object.cpp
+    //from https://github.com/yuki-koyama/elasty/blob/master/src/utils.cpp
     public Material material;
     public int solverIterators=2;
     public static int PBD_OR_XPBD=2;
     List<Vector3> vertices=new List<Vector3>();
-    Vector3[] myVertices=new Vector3[796];
+    Vector3[] myVertices=new Vector3[976];
     Particle[] ball=new Particle[976];
     List<int> triangles=new List<int>();
-    int[] myTriangles=new int[1830];
+    int[] myTriangles=new int[5490];
     List<Vector2> uvs= new List<Vector2>();
     Vector2[] myUV=new Vector2[976];
     Vector3[] normals=new Vector3[976];
@@ -23,59 +25,66 @@ public class Test_NotSquareCloth : MonoBehaviour
     List<BendingConstraint> bendconstraints=new List<BendingConstraint>();
     GameObject sphere;
     Mesh mesh;
+    
     void Start()
     {
-        generateClothMeshObjData(2,4,30,30);
-        DrawMeshSetConstraint();    
+        DrawMeshSetConstraint();
+        generateClothMeshObjData(2,2,30,30);
     }
     void Update()
     {
-        float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
-        //Apply external forces
-        for(int i=0;i<ball.Length;i++)
+        for(int substep=0;substep<5;substep++)
         {
-            Vector3 g=new Vector3(0,-9.8f,0);
-            ball[i].f=ball[i].m*g;
-        }
-        //applyAerodynamicForces
-        applyAerodynamicForces(new Vector3(0,0,0) , 0.1f, 0.06f);
-        for(int i=0;i<ball.Length;i++)
-        {//f=ma, a=f*1/m = f*w
-            ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
-            ball[i].p = ball[i].x + m_delta_physics_time * ball[i].v;
-        }
-        // Reset Lagrange multipliers (only necessary for XPBD)
-        foreach(DistanceConstraint constraint in distconstraints){
-            constraint.m_lagrange_multiplier=0;
-        }
-        foreach(FixedPointConstraint constraint in fixconstraints){
-            constraint.m_lagrange_multiplier=0;
-        }
-        foreach(EnvironmentalCollisionConstraint constraint in collconstraints){
-            constraint.m_lagrange_multiplier=0;
-        }
-        // Project Particles
-        
-        for (int i = 0; i < solverIterators; i++){
-            foreach(DistanceConstraint constraint in distconstraints){
-                constraint.projectParticles();
-            }
-            foreach(FixedPointConstraint constraint in fixconstraints)
+            float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
+            //Apply external forces
+            for(int i=0;i<ball.Length;i++)
             {
-                constraint.projectParticles();
-            }  
-        }
-        //更新 GameObject localPosition & Particles
-        for(int i=0;i<ball.Length;i++)
-        {
-            //更新 GameObject's localPosition
-            myVertices[i] = ball[i].p;
-            mesh.vertices=myVertices;
-            //更新 particle
-            ball[i].v = (ball[i].p- ball[i].x) * (1.0f/m_delta_physics_time);
-            ball[i].x = ball[i].p;
-            //Update velocities
-            ball[i].v*=0.9999f;
+                Vector3 g=new Vector3(0,-9.8f,0);
+                print("i: "+i);
+                print("ball:"+ball.Length);
+                print("ball[0]:"+ball[0]);
+                ball[i].f=ball[i].m*g;
+            }
+            //applyAerodynamicForces
+            applyAerodynamicForces(new Vector3(0,0,0) , 0.1f, 0.06f);
+            for(int i=0;i<ball.Length;i++)
+            {//f=ma, a=f*1/m = f*w
+                ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
+                ball[i].p = ball[i].x + m_delta_physics_time * ball[i].v;
+            }
+            // Reset Lagrange multipliers (only necessary for XPBD)
+            foreach(DistanceConstraint constraint in distconstraints){
+                constraint.m_lagrange_multiplier=0;
+            }
+            foreach(FixedPointConstraint constraint in fixconstraints){
+                constraint.m_lagrange_multiplier=0;
+            }
+            foreach(EnvironmentalCollisionConstraint constraint in collconstraints){
+                constraint.m_lagrange_multiplier=0;
+            }
+            // Project Particles
+            
+            for (int i = 0; i < solverIterators; i++){
+                foreach(DistanceConstraint constraint in distconstraints){
+                    constraint.projectParticles();
+                }
+                foreach(FixedPointConstraint constraint in fixconstraints)
+                {
+                    constraint.projectParticles();
+                }  
+            }
+            //更新 GameObject localPosition & Particles
+            for(int i=0;i<ball.Length;i++)
+            {
+                //更新 GameObject's localPosition
+                myVertices[i] = ball[i].p;
+                mesh.vertices=myVertices;
+                //更新 particle
+                ball[i].v = (ball[i].p- ball[i].x) * (1.0f/m_delta_physics_time);
+                ball[i].x = ball[i].p;
+                //Update velocities
+                ball[i].v*=0.9999f;
+            }
         }
     }
     void DrawMeshSetConstraint()
@@ -86,7 +95,7 @@ public class Test_NotSquareCloth : MonoBehaviour
         mesh = GetComponent<MeshFilter>().mesh;
         mesh.Clear();
         //設置頂點
-        for(int i=0;i<vertices.Count;i++){ vertices[i]+=new Vector3(0,2,1.9f);}
+        for(int i=0;i<vertices.Count;i++){ vertices[i]+=new Vector3(0,2,1);}
         myVertices=vertices.ToArray();
         mesh.vertices=myVertices;
         //設置三角形頂點順序，順時針設置
@@ -100,7 +109,9 @@ public class Test_NotSquareCloth : MonoBehaviour
         {
             ball[i] = new Particle(myVertices[i]);
             myVertices[i] = ball[i].x;
-            ball[i].v=new Vector3(UnityEngine.Random.Range(-0.001f,+0.001f),UnityEngine.Random.Range(-0.001f,+0.001f),UnityEngine.Random.Range(-0.001f,+0.001f) );
+            ball[i].v=new Vector3(UnityEngine.Random.Range(-0.001f,+0.001f),
+                                  UnityEngine.Random.Range(-0.001f,+0.001f),
+                                  UnityEngine.Random.Range(-0.001f,+0.001f) );
         }
         //釘住右上角,左上角
         float range_radius = 0.1f;
@@ -109,11 +120,11 @@ public class Test_NotSquareCloth : MonoBehaviour
             ball[i].m = 1;
             ball[i].w = 1.0f/ball[i].m;
             ball[i].f = new Vector3(0, -9.8f, 0);
-            if ((ball[i].x - new Vector3(1,2f,0)).magnitude < range_radius)
+            if ((ball[i].x - new Vector3(1,2,0)).magnitude < range_radius)
             {
                 fixconstraints.Add( new FixedPointConstraint(ball[i],ball[i].x));   
             }
-            else if ((ball[i].x - new Vector3(-1,2f,0)).magnitude < range_radius)
+            else if ((ball[i].x - new Vector3(-1,2,0)).magnitude < range_radius)
             {
                 fixconstraints.Add( new FixedPointConstraint(ball[i],ball[i].x));
             }
@@ -310,24 +321,37 @@ public class Test_NotSquareCloth : MonoBehaviour
             ball[myTriangles[i * 3 + 2]].f += (m_2 / m_sum) * f;
         }
     }
-    void generateClothMeshObjData(int width, int height, int horizontal_resolution, int vertical_resolution)
+    void generateClothMeshObjData(float w, float h, int hr, int vr)
+    {
+        int shift = generatePart(w*3, h, hr*3, vr, 0, 0, 0);
+        generatePart(w, h, hr, vr, shift, 0, h+h/vr);
+        for(int j=0; j<hr; j++)
+        {
+            triangles.Add(shift-hr-hr+j);
+            triangles.Add(shift+j);
+            triangles.Add(shift+j+1);
+
+            triangles.Add(shift-hr-hr+j);
+            triangles.Add(shift-hr-hr+j-1);
+            triangles.Add(shift+j);
+        }
+    }
+    int generatePart(float width, float height, int hr, int vr, int shift, float dx, float dy)
     {
         // Vertices
-        for (int v_index = 0; v_index <= vertical_resolution; ++v_index)
+        for (int v_index = 0; v_index <= vr; ++v_index)
         {
-            for (int h_index = 0; h_index <= horizontal_resolution; ++h_index)
+            for (int h_index = 0; h_index <= hr; ++h_index)
             {
-                float u = (h_index - 0.5f) / (float)horizontal_resolution; 
-                if (v_index % 2 == 0 || h_index == 0) u = h_index / (float) horizontal_resolution;
-                float v = v_index / (float)vertical_resolution;
-                //print("v: "+v);
-                float x = (u - 0.5f) * width;
-                float y = (v - 0.5f) * height;
-                //print("y: "+y);
+                float u = (h_index - 0.5f) / (float)hr; 
+                if (v_index % 2 == 0 || h_index == 0) u = h_index / (float) hr;
+                float v = v_index / (float)vr;
+                float x = (u - 0.5f) * width+dx;
+                float y = (v - 0.5f) * height+dy;
                 vertices.Add(new Vector3(x, 0, y));
                 uvs.Add(new Vector2(u, v));
                 // Additional vetex at the even-indexed row
-                if (v_index % 2 == 1 && h_index == horizontal_resolution)
+                if (v_index % 2 == 1 && h_index == hr)
                 {
                     vertices.Add(new Vector3(0.5f * width, 0, y));
                     uvs.Add(new Vector2(1, v));
@@ -335,58 +359,59 @@ public class Test_NotSquareCloth : MonoBehaviour
             }
         }
         // Triangles
-        for (int v_index = 0; v_index < vertical_resolution; ++v_index)
+        for (int v_index = 0; v_index < vr; ++v_index)
         {
             if (v_index % 2 == 0)
             {
-                int top_row_begin = (2 * (horizontal_resolution + 1) + 1) * (v_index / 2);
-                int bottom_row_begin = top_row_begin + horizontal_resolution + 1;
+                int top_row_begin = (2 * (hr + 1) + 1) * (v_index / 2);
+                int bottom_row_begin = top_row_begin + hr + 1;
 
-                for (int h_index = 0; h_index <= horizontal_resolution; ++h_index)
+                for (int h_index = 0; h_index <= hr; ++h_index)
                 {
                     if (h_index == 0)
                     {
-                        triangles.Add(top_row_begin + h_index);
-                        triangles.Add(bottom_row_begin + 0);
-                        triangles.Add(bottom_row_begin + 1);
+                        triangles.Add(shift + top_row_begin + h_index);
+                        triangles.Add(shift + bottom_row_begin + 0);
+                        triangles.Add(shift + bottom_row_begin + 1);
                     }
                     else
                     {
-                        triangles.Add(top_row_begin + h_index);
-                        triangles.Add(top_row_begin + h_index - 1);
-                        triangles.Add(bottom_row_begin + h_index);
+                        triangles.Add(shift + top_row_begin + h_index);
+                        triangles.Add(shift + top_row_begin + h_index - 1);
+                        triangles.Add(shift + bottom_row_begin + h_index);
                         
-                        triangles.Add(top_row_begin + h_index);
-                        triangles.Add(bottom_row_begin + h_index); 
-                        triangles.Add(bottom_row_begin + h_index + 1);
+                        triangles.Add(shift + top_row_begin + h_index);
+                        triangles.Add(shift + bottom_row_begin + h_index); 
+                        triangles.Add(shift + bottom_row_begin + h_index + 1);
                     }
                 }
             }
             else
             {
-                int top_row_begin = (2 * (horizontal_resolution + 1) + 1) * ((v_index - 1) / 2) + horizontal_resolution + 1;
-                int bottom_row_begin = top_row_begin + horizontal_resolution + 2;
+                int top_row_begin = (2 * (hr + 1) + 1) * ((v_index - 1) / 2) + hr + 1;
+                int bottom_row_begin = top_row_begin + hr + 2;
 
-                for (int h_index = 0; h_index <= horizontal_resolution; ++h_index)
+                for (int h_index = 0; h_index <= hr; ++h_index)
                 {
                     if (h_index == 0)
                     {
-                        triangles.Add(top_row_begin + h_index);
-                        triangles.Add(bottom_row_begin + h_index);
-                        triangles.Add(top_row_begin + h_index + 1);
+                        triangles.Add(shift + top_row_begin + h_index);
+                        triangles.Add(shift + bottom_row_begin + h_index);
+                        triangles.Add(shift + top_row_begin + h_index + 1);
                     }
                     else
                     {
-                        triangles.Add(top_row_begin + h_index);
-                        triangles.Add(bottom_row_begin + h_index - 1);
-                        triangles.Add(bottom_row_begin + h_index);
+                        triangles.Add(shift + top_row_begin + h_index);
+                        triangles.Add(shift + bottom_row_begin + h_index - 1);
+                        triangles.Add(shift + bottom_row_begin + h_index);
                         
-                        triangles.Add(top_row_begin + h_index);
-                        triangles.Add(bottom_row_begin + h_index);
-                        triangles.Add(top_row_begin + h_index + 1);
+                        triangles.Add(shift + top_row_begin + h_index);
+                        triangles.Add(shift + bottom_row_begin + h_index);
+                        triangles.Add(shift + top_row_begin + h_index + 1);
                     }
                 }
             }
         }
+        return vertices.Count;
     }
 }

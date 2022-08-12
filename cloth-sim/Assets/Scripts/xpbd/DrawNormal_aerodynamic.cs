@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class Test01_5x5_aerodynamic : MonoBehaviour
+public class DrawNormal_aerodynamic : MonoBehaviour
 {
     public Material material;
     public Material normal,drag,lift;
