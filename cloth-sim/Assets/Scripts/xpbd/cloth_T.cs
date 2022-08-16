@@ -11,13 +11,13 @@ public class cloth_T : MonoBehaviour
     public int solverIterators=2;
     public static int PBD_OR_XPBD=2;
     List<Vector3> vertices=new List<Vector3>();
-    Vector3[] myVertices=new Vector3[976];
-    Particle[] ball=new Particle[976];
+    Vector3[] myVertices;
+    Particle[] ball;
     List<int> triangles=new List<int>();
-    int[] myTriangles=new int[5490];
+    int[] myTriangles;
     List<Vector2> uvs= new List<Vector2>();
-    Vector2[] myUV=new Vector2[976];
-    Vector3[] normals=new Vector3[976];
+    Vector2[] myUV;
+    Vector3[] normals;
     List<DistanceConstraint> distconstraints = new List<DistanceConstraint>();
     List<FixedPointConstraint> fixconstraints = new List<FixedPointConstraint>();
     List<EnvironmentalCollisionConstraint> collconstraints = new List<EnvironmentalCollisionConstraint>();
@@ -28,66 +28,66 @@ public class cloth_T : MonoBehaviour
     
     void Start()
     {
-        DrawMeshSetConstraint();
         generateClothMeshObjData(2,2,30,30);
+        SetMeshAndConstraint();
     }
-    void Update()
-    {
-        for(int substep=0;substep<5;substep++)
-        {
-            float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
-            //Apply external forces
-            for(int i=0;i<ball.Length;i++)
-            {
-                Vector3 g=new Vector3(0,-9.8f,0);
-                print("i: "+i);
-                print("ball:"+ball.Length);
-                print("ball[0]:"+ball[0]);
-                ball[i].f=ball[i].m*g;
-            }
-            //applyAerodynamicForces
-            applyAerodynamicForces(new Vector3(0,0,0) , 0.1f, 0.06f);
-            for(int i=0;i<ball.Length;i++)
-            {//f=ma, a=f*1/m = f*w
-                ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
-                ball[i].p = ball[i].x + m_delta_physics_time * ball[i].v;
-            }
-            // Reset Lagrange multipliers (only necessary for XPBD)
-            foreach(DistanceConstraint constraint in distconstraints){
-                constraint.m_lagrange_multiplier=0;
-            }
-            foreach(FixedPointConstraint constraint in fixconstraints){
-                constraint.m_lagrange_multiplier=0;
-            }
-            foreach(EnvironmentalCollisionConstraint constraint in collconstraints){
-                constraint.m_lagrange_multiplier=0;
-            }
-            // Project Particles
+    // void Update()
+    // {
+    //     for(int substep=0;substep<5;substep++)
+    //     {
+    //         float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
+    //         //Apply external forces
+    //         for(int i=0;i<ball.Length;i++)
+    //         {
+    //             Vector3 g=new Vector3(0,-9.8f,0);
+    //             print("i: "+i);
+    //             print("ball:"+ball.Length);
+    //             print("ball[0]:"+ball[0].x);
+    //             ball[i].f=ball[i].m*g;
+    //         }
+    //         //applyAerodynamicForces
+    //         applyAerodynamicForces(new Vector3(0,0,0) , 0.1f, 0.06f);
+    //         for(int i=0;i<ball.Length;i++)
+    //         {//f=ma, a=f*1/m = f*w
+    //             ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
+    //             ball[i].p = ball[i].x + m_delta_physics_time * ball[i].v;
+    //         }
+    //         // Reset Lagrange multipliers (only necessary for XPBD)
+    //         foreach(DistanceConstraint constraint in distconstraints){
+    //             constraint.m_lagrange_multiplier=0;
+    //         }
+    //         foreach(FixedPointConstraint constraint in fixconstraints){
+    //             constraint.m_lagrange_multiplier=0;
+    //         }
+    //         foreach(EnvironmentalCollisionConstraint constraint in collconstraints){
+    //             constraint.m_lagrange_multiplier=0;
+    //         }
+    //         // Project Particles
             
-            for (int i = 0; i < solverIterators; i++){
-                foreach(DistanceConstraint constraint in distconstraints){
-                    constraint.projectParticles();
-                }
-                foreach(FixedPointConstraint constraint in fixconstraints)
-                {
-                    constraint.projectParticles();
-                }  
-            }
-            //更新 GameObject localPosition & Particles
-            for(int i=0;i<ball.Length;i++)
-            {
-                //更新 GameObject's localPosition
-                myVertices[i] = ball[i].p;
-                mesh.vertices=myVertices;
-                //更新 particle
-                ball[i].v = (ball[i].p- ball[i].x) * (1.0f/m_delta_physics_time);
-                ball[i].x = ball[i].p;
-                //Update velocities
-                ball[i].v*=0.9999f;
-            }
-        }
-    }
-    void DrawMeshSetConstraint()
+    //         for (int i = 0; i < solverIterators; i++){
+    //             foreach(DistanceConstraint constraint in distconstraints){
+    //                 constraint.projectParticles();
+    //             }
+    //             foreach(FixedPointConstraint constraint in fixconstraints)
+    //             {
+    //                 constraint.projectParticles();
+    //             }  
+    //         }
+    //         //更新 GameObject localPosition & Particles
+    //         for(int i=0;i<ball.Length;i++)
+    //         {
+    //             //更新 GameObject's localPosition
+    //             myVertices[i] = ball[i].p;
+    //             mesh.vertices=myVertices;
+    //             //更新 particle
+    //             ball[i].v = (ball[i].p- ball[i].x) * (1.0f/m_delta_physics_time);
+    //             ball[i].x = ball[i].p;
+    //             //Update velocities
+    //             ball[i].v*=0.9999f;
+    //         }
+    //     }
+    // }
+    void SetMeshAndConstraint()
     {
         gameObject.AddComponent<MeshFilter>();
         gameObject.AddComponent<MeshRenderer>();
@@ -108,6 +108,8 @@ public class cloth_T : MonoBehaviour
         for(int i=0;i<myVertices.Length;i++)
         {
             ball[i] = new Particle(myVertices[i]);
+            print("HOW MANY PARTICLE:"+vertices.Count);
+            print("ball["+i+"]:"+ball[i]);
             myVertices[i] = ball[i].x;
             ball[i].v=new Vector3(UnityEngine.Random.Range(-0.001f,+0.001f),
                                   UnityEngine.Random.Range(-0.001f,+0.001f),
@@ -412,6 +414,7 @@ public class cloth_T : MonoBehaviour
                 }
             }
         }
+        print("Total vertices:"+vertices.Count);
         return vertices.Count;
     }
 }
