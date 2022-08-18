@@ -12,7 +12,7 @@ public class cloth_T : MonoBehaviour
     public static int PBD_OR_XPBD=2;
     List<Vector3> vertices=new List<Vector3>();
     Vector3[] myVertices;
-    Particle[] ball;
+    Particle[] ball=new Particle[1742];
     List<int> triangles=new List<int>();
     int[] myTriangles;
     List<Vector2> uvs= new List<Vector2>();
@@ -28,7 +28,7 @@ public class cloth_T : MonoBehaviour
     
     void Start()
     {
-        generateClothMeshObjData(2,2,30,30);
+        generateClothMeshObjData(2,2,20,20);
         SetMeshAndConstraint();
     }
     // void Update()
@@ -40,9 +40,6 @@ public class cloth_T : MonoBehaviour
     //         for(int i=0;i<ball.Length;i++)
     //         {
     //             Vector3 g=new Vector3(0,-9.8f,0);
-    //             print("i: "+i);
-    //             print("ball:"+ball.Length);
-    //             print("ball[0]:"+ball[0].x);
     //             ball[i].f=ball[i].m*g;
     //         }
     //         //applyAerodynamicForces
@@ -104,12 +101,12 @@ public class cloth_T : MonoBehaviour
         //設置uv
         myUV=uvs.ToArray();
         mesh.uv=myUV;
+        print("how many vertices:"+myVertices.Length);
+        print("how many triangles:"+myTriangles.Length);
         //加些小小的擾動
-        for(int i=0;i<myVertices.Length;i++)
+        for(int i=0;i<vertices.Count;i++)
         {
             ball[i] = new Particle(myVertices[i]);
-            print("HOW MANY PARTICLE:"+vertices.Count);
-            print("ball["+i+"]:"+ball[i]);
             myVertices[i] = ball[i].x;
             ball[i].v=new Vector3(UnityEngine.Random.Range(-0.001f,+0.001f),
                                   UnityEngine.Random.Range(-0.001f,+0.001f),
@@ -122,11 +119,11 @@ public class cloth_T : MonoBehaviour
             ball[i].m = 1;
             ball[i].w = 1.0f/ball[i].m;
             ball[i].f = new Vector3(0, -9.8f, 0);
-            if ((ball[i].x - new Vector3(1,2,0)).magnitude < range_radius)
+            if ((ball[i].x - new Vector3(3,2,0)).magnitude < range_radius)
             {
                 fixconstraints.Add( new FixedPointConstraint(ball[i],ball[i].x));   
             }
-            else if ((ball[i].x - new Vector3(-1,2,0)).magnitude < range_radius)
+            else if ((ball[i].x - new Vector3(-3,2,0)).magnitude < range_radius)
             {
                 fixconstraints.Add( new FixedPointConstraint(ball[i],ball[i].x));
             }
