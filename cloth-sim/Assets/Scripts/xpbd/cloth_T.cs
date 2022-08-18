@@ -31,59 +31,59 @@ public class cloth_T : MonoBehaviour
         generateClothMeshObjData(2,2,20,20);
         SetMeshAndConstraint();
     }
-    // void Update()
-    // {
-    //     for(int substep=0;substep<5;substep++)
-    //     {
-    //         float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
-    //         //Apply external forces
-    //         for(int i=0;i<ball.Length;i++)
-    //         {
-    //             Vector3 g=new Vector3(0,-9.8f,0);
-    //             ball[i].f=ball[i].m*g;
-    //         }
-    //         //applyAerodynamicForces
-    //         applyAerodynamicForces(new Vector3(0,0,0) , 0.1f, 0.06f);
-    //         for(int i=0;i<ball.Length;i++)
-    //         {//f=ma, a=f*1/m = f*w
-    //             ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
-    //             ball[i].p = ball[i].x + m_delta_physics_time * ball[i].v;
-    //         }
-    //         // Reset Lagrange multipliers (only necessary for XPBD)
-    //         foreach(DistanceConstraint constraint in distconstraints){
-    //             constraint.m_lagrange_multiplier=0;
-    //         }
-    //         foreach(FixedPointConstraint constraint in fixconstraints){
-    //             constraint.m_lagrange_multiplier=0;
-    //         }
-    //         foreach(EnvironmentalCollisionConstraint constraint in collconstraints){
-    //             constraint.m_lagrange_multiplier=0;
-    //         }
-    //         // Project Particles
+    void Update()
+    {
+        for(int substep=0;substep<5;substep++)
+        {
+            float m_delta_physics_time = 1/60f; // 公式:delta_frame_time/substep
+            //Apply external forces
+            for(int i=0;i<ball.Length;i++)
+            {
+                Vector3 g=new Vector3(0,-9.8f,0);
+                ball[i].f=ball[i].m*g;
+            }
+            //applyAerodynamicForces
+            applyAerodynamicForces(new Vector3(0,0,0) , 0.1f, 0.06f);
+            for(int i=0;i<ball.Length;i++)
+            {//f=ma, a=f*1/m = f*w
+                ball[i].v = ball[i].v + m_delta_physics_time * ball[i].w * ball[i].f;
+                ball[i].p = ball[i].x + m_delta_physics_time * ball[i].v;
+            }
+            // Reset Lagrange multipliers (only necessary for XPBD)
+            foreach(DistanceConstraint constraint in distconstraints){
+                constraint.m_lagrange_multiplier=0;
+            }
+            foreach(FixedPointConstraint constraint in fixconstraints){
+                constraint.m_lagrange_multiplier=0;
+            }
+            foreach(EnvironmentalCollisionConstraint constraint in collconstraints){
+                constraint.m_lagrange_multiplier=0;
+            }
+            // Project Particles
             
-    //         for (int i = 0; i < solverIterators; i++){
-    //             foreach(DistanceConstraint constraint in distconstraints){
-    //                 constraint.projectParticles();
-    //             }
-    //             foreach(FixedPointConstraint constraint in fixconstraints)
-    //             {
-    //                 constraint.projectParticles();
-    //             }  
-    //         }
-    //         //更新 GameObject localPosition & Particles
-    //         for(int i=0;i<ball.Length;i++)
-    //         {
-    //             //更新 GameObject's localPosition
-    //             myVertices[i] = ball[i].p;
-    //             mesh.vertices=myVertices;
-    //             //更新 particle
-    //             ball[i].v = (ball[i].p- ball[i].x) * (1.0f/m_delta_physics_time);
-    //             ball[i].x = ball[i].p;
-    //             //Update velocities
-    //             ball[i].v*=0.9999f;
-    //         }
-    //     }
-    // }
+            for (int i = 0; i < solverIterators; i++){
+                foreach(DistanceConstraint constraint in distconstraints){
+                    constraint.projectParticles();
+                }
+                foreach(FixedPointConstraint constraint in fixconstraints)
+                {
+                    constraint.projectParticles();
+                }  
+            }
+            //更新 GameObject localPosition & Particles
+            for(int i=0;i<ball.Length;i++)
+            {
+                //更新 GameObject's localPosition
+                myVertices[i] = ball[i].p;
+                mesh.vertices=myVertices;
+                //更新 particle
+                ball[i].v = (ball[i].p- ball[i].x) * (1.0f/m_delta_physics_time);
+                ball[i].x = ball[i].p;
+                //Update velocities
+                ball[i].v*=0.9999f;
+            }
+        }
+    }
     void SetMeshAndConstraint()
     {
         gameObject.AddComponent<MeshFilter>();
